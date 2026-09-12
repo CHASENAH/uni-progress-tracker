@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ISD 学业进度记录 · 通用版</title>
+<style>
+  :root {
+    --bg: #f4f6fa; --card: #ffffff; --text: #2b2f3a; --muted: #7a8194;
+    --accent: #4f6ef7; --border: #e3e7ef;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: "Segoe UI", "Microsoft YaHei", sans-serif; background: var(--bg); color: var(--text); padding: 28px 20px 60px; }
+  .wrap { max-width: 1100px; margin: 0 auto; }
+  h1 { font-size: 22px; margin-bottom: 4px; }
+  .subtitle { color: var(--muted); font-size: 13px; margin-bottom: 24px; line-height: 1.6; }
+
+  /* ---------- 模块A ---------- */
+  .moduleA { display: grid; gap: 16px; margin-bottom: 32px; }
+  .progress-card { background: var(--card); border-radius: 14px; padding: 20px 24px; box-shadow: 0 1px 4px rgba(30,40,80,.06); }
+  .progress-card h2 { font-size: 15px; margin-bottom: 12px; }
+  .bar-row { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 6px; gap: 10px; flex-wrap: wrap; }
+  .bar-label { font-size: 13px; color: var(--muted); }
+  .bar-pct { font-size: 20px; font-weight: 700; }
+  .track { height: 14px; background: #eef1f7; border-radius: 999px; overflow: hidden; margin-bottom: 4px; position: relative; }
+  .fill { height: 100%; border-radius: 999px; transition: width .6s ease; background: linear-gradient(90deg,#4f6ef7,#7d9bff); }
+  .fill.lite { position: absolute; top: 0; opacity: .38; border-radius: 0 999px 999px 0; transition: left .6s ease, width .6s ease; }
+  .bar-note { font-size: 12px; color: var(--muted); }
+  .subcats { margin-top: 18px; display: grid; gap: 14px; }
+  .subcat .track { height: 10px; }
+  .fill-1 { background: linear-gradient(90deg,#34a374,#6cc79c); }
+  .fill-2 { background: linear-gradient(90deg,#ef8f3c,#f7b57a); }
+  .fill-3 { background: linear-gradient(90deg,#9a66e8,#c1a4f5); }
+  .fill-4 { background: linear-gradient(90deg,#e0596e,#ef95a4); }
+  .fill-5 { background: linear-gradient(90deg,#2ea7b8,#7cc8d4); }
+  .fill-6 { background: linear-gradient(90deg,#d6902c,#e8b863); }
+  .date-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .date-row input { border: 1px solid var(--border); border-radius: 8px; padding: 5px 10px; font-size: 13px; }
+
+  /* ---------- 模块B ---------- */
+  .moduleB { display: grid; gap: 18px; }
+  .course-card { background: var(--card); border-radius: 14px; padding: 20px 24px; box-shadow: 0 1px 4px rgba(30,40,80,.06); }
+  .course-card h2 { font-size: 16px; margin-bottom: 2px; }
+  .course-card .desc { font-size: 12px; color: var(--muted); margin-bottom: 14px; }
+  .zone-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 16px; }
+  .zone-title { font-size: 13px; font-weight: 700; margin: 0 0 8px; }
+  .zone-title .count { color: var(--muted); font-weight: 400; font-size: 12px; }
+  .drop-zone {
+    border: 2px dashed var(--border); border-radius: 10px; padding: 12px; min-height: 60px;
+    transition: border-color .15s, background .15s; display: flex; flex-wrap: wrap; gap: 8px; align-content: flex-start;
+  }
+  .drop-zone.drag-over { border-color: var(--accent); background: #f0f4ff; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 8px;
+    font-size: 13px; font-weight: 600; cursor: grab; user-select: none; border: 1px solid transparent;
+  }
+  .chip:active { cursor: grabbing; }
+  .chip.dragging { opacity: .35; }
+  .chip.done     { background: #e8f7f0; border-color: #b5e3cf; color: #1d7a52; }
+  .chip.progress { background: #e3efff; border-color: #b3d1fb; color: #2258c4; }
+  .chip.planned  { background: #fdf1e3; border-color: #f3d4ab; color: #a05e14; }
+  .chip.other    { background: #f0f1f5; border-color: var(--border); color: #555c6e; }
+  .empty-hint { color: var(--muted); font-size: 12px; align-self: center; padding: 6px; }
+  .slot-group-title { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; margin: 10px 0 8px; }
+
+  .tools { margin-top: 16px; font-size: 12px; color: var(--muted); text-align: center; }
+  button.reset {
+    border: 1px solid var(--border); background: #fff; color: var(--muted);
+    padding: 5px 12px; border-radius: 8px; cursor: pointer; font-size: 12px;
+  }
+  button.reset:hover { color: var(--text); border-color: #c8cede; }
+
+  /* ---------- Common Core ---------- */
+  .cc-area-row { display: flex; flex-wrap: wrap; gap: 10px; }
+  .cc-area {
+    border: 2px dashed #cdd4e2; border-radius: 10px; padding: 10px 12px; background: #fff;
+    flex: 1 1 230px; display: flex; flex-direction: column; gap: 6px; min-width: 210px;
+  }
+  .cc-area .area-label { font-size: 12px; color: var(--muted); font-weight: 700; }
+  .cc-area .area-label .cr { font-weight: 400; }
+  .cc-area .area-chips { display: flex; flex-wrap: wrap; gap: 6px; min-height: 28px; align-items: center; }
+  .cc-add { display: flex; gap: 4px; }
+  .cc-add input { border: 1px solid var(--border); border-radius: 6px; padding: 4px 8px; font-size: 12px; flex: 1; min-width: 0; }
+  .cc-add button { border: 1px solid var(--accent); background: var(--accent); color: #fff; border-radius: 6px; padding: 4px 10px; font-size: 12px; cursor: pointer; white-space: nowrap; }
+  .cc-hint { font-size: 11px; color: var(--muted); margin-top: 6px; line-height: 1.5; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>ISD 学业进度记录 · 通用版</h1>
+  <div class="subtitle">
+    适用于 BSc in Integrative Systems and Design（4Y）的进度记录工具。
+    拖动课号方块改变状态（已完成 ✅ / 进行中 🔄 / 计划选 ⭐ / 可选），大类修满后自动收起未完成栏；
+    ELEC 3xxx / 4xxx 占位方块双击可填入实际课号。所有记录仅保存在你自己的浏览器中。
+  </div>
+
+  <div class="moduleA">
+    <div class="progress-card">
+      <div class="bar-row">
+        <h2>1 · 时间进度</h2>
+        <span class="bar-pct" id="timePct">--%</span>
+      </div>
+      <div class="track"><div class="fill" id="timeFill" style="width:0%"></div></div>
+      <div class="bar-note date-row">
+        <label>入学 <input type="date" id="startDate"></label>
+        <label>毕业 <input type="date" id="endDate"></label>
+        <span id="timeNote"></span>
+      </div>
+    </div>
+    <div class="progress-card">
+      <div class="bar-row"><h2>2 · 课程进度</h2><span class="bar-pct" id="coursePct">--%</span></div>
+      <div class="track"><div class="fill" id="courseFill" style="width:0%"></div><div class="fill lite" id="courseFillLite" style="left:0%;width:0%"></div></div>
+      <div class="bar-note" id="courseNote"></div>
+      <div class="subcats" id="subcats"></div>
+    </div>
+  </div>
+
+  <div class="moduleB" id="moduleB"></div>
+</div>
+
+<script>
+/* =====================================================
+ *  ★★★ ISD 课程数据（2025-26 4Y curriculum）★★★
+ *  g: engReq 工科必修 | langReq 语言必修 | isdReq ISDN必修
+ *     bizE 创业E | projE 项目E
+ *  初始全部为 "other"，由使用者自行拖动分类
+ * ===================================================== */
+const DATA = {
+  total: { name: "专业课 (ISD)", need: 87, unit: "学分" },
+
+  groups: [
+    { g: "engReq",  name: "工科必修 · COMP / MATH / PHYS", need: 12 },
+    { g: "langReq", name: "语言必修 · LANG", need: 3, simple: true },
+    { g: "isdReq",  name: "ISDN 必修", need: 45, hidePlanned: true },
+    { g: "bizE",    name: "商学选修 · 创业E（需6学分，≥1门3000级）", need: 6 },
+    { g: "projE",   name: "工科选修 · 项目E（需21学分：高阶12 + 低阶9，≥12学分3000级，1000级≤3学分）", need: 21 },
+  ],
+
+  courses: [
+    /* ---- 工科必修（要求12学分：COMP + MATH + PHYS） ---- */
+    { id: "COMP 1023",  name: "Introduction to Python",              cat: "isd", g: "engReq", credit: 3, status: "other", alt: [{ cat: "isd", g: "projE" }] },
+    { id: "COMP 1022P", name: "Introduction to Computing with Java", cat: "isd", g: "engReq", credit: 3, status: "other", alt: [{ cat: "isd", g: "projE" }] },
+    { id: "COMP 2011",  name: "Programming with C++",                cat: "isd", g: "engReq", credit: 4, status: "other", alt: [{ cat: "isd", g: "projE" }] },
+    { id: "COMP 2012H", name: "Honors OOP & Data Structures",        cat: "isd", g: "engReq", credit: 4, status: "other" },
+    { id: "MATH 1006",  name: "Calculus, Vectors & Matrices",        cat: "isd", g: "engReq", credit: 4, status: "other" },
+    { id: "MATH 1013",  name: "Calculus I",                          cat: "isd", g: "engReq", credit: 3, status: "other" },
+    { id: "MATH 1014",  name: "Calculus II",                         cat: "isd", g: "engReq", credit: 3, status: "other" },
+    { id: "MATH 1020",  name: "Accelerated Calculus",                cat: "isd", g: "engReq", credit: 4, status: "other" },
+    { id: "MATH 1023",  name: "Honors Calculus I",                   cat: "isd", g: "engReq", credit: 3, status: "other" },
+    { id: "MATH 1024",  name: "Honors Calculus II",                  cat: "isd", g: "engReq", credit: 3, status: "other" },
+    { id: "PHYS 1101",  name: "Introductory Physics",                cat: "isd", g: "engReq", credit: 3, status: "other" },
+    { id: "PHYS 1111",  name: "General Physics I",                   cat: "isd", g: "engReq", credit: 3, status: "other" },
+    { id: "PHYS 1112",  name: "General Physics I with Calculus",     cat: "isd", g: "engReq", credit: 4, status: "other" },
+    { id: "PHYS 1312",  name: "Honors General Physics I",            cat: "isd", g: "engReq", credit: 3, status: "other" },
+
+    /* ---- 语言必修（3学分） ---- */
+    { id: "LANG 4036",  name: "Technical Communication for Technology Projects", cat: "isd", g: "langReq", credit: 3, status: "other" },
+
+    /* ---- ISDN 必修（45学分，课程由 pre-enroll 分配） ---- */
+    { id: "ISDN 1001", name: "Introduction to ISD",                  cat: "isd", g: "isdReq", credit: 3, status: "other" },
+    { id: "ISDN 1004", name: "Sketching",                            cat: "isd", g: "isdReq", credit: 1, status: "other" },
+    { id: "ISDN 1007", name: "Design Thinking to Design Action",     cat: "isd", g: "isdReq", credit: 3, status: "other" },
+    { id: "ISDN 1010", name: "Academic & Professional Dev I",        cat: "isd", g: "isdReq", credit: 1, status: "other" },
+    { id: "ISDN 1011", name: "Industrial Training",                  cat: "isd", g: "isdReq", credit: 0, status: "other" },
+    { id: "ISDN 2001", name: "Second Year Design Project I",         cat: "isd", g: "isdReq", credit: 1, status: "other" },
+    { id: "ISDN 2002", name: "Second Year Design Project II",        cat: "isd", g: "isdReq", credit: 4, status: "other" },
+    { id: "ISDN 2010", name: "Academic & Professional Dev II",       cat: "isd", g: "isdReq", credit: 0, status: "other" },
+    { id: "ISDN 2200", name: "Systems Thinking and Design",          cat: "isd", g: "isdReq", credit: 1, status: "other" },
+    { id: "ISDN 2300", name: "Introduction to 3D Design",            cat: "isd", g: "isdReq", credit: 3, status: "other" },
+    { id: "ISDN 2400", name: "Physical Prototyping",                 cat: "isd", g: "isdReq", credit: 3, status: "other" },
+    { id: "ISDN 2601", name: "Explore World thru Smart Mechatronics",cat: "isd", g: "isdReq", credit: 3, status: "other" },
+    { id: "ISDN 2602", name: "Internet of Things: ISD",              cat: "isd", g: "isdReq", credit: 3, status: "other" },
+    { id: "ISDN 2603", name: "Materials, Shape and Design",          cat: "isd", g: "isdReq", credit: 3, status: "other" },
+    { id: "ISDN 3001", name: "Third Year Design Project I",          cat: "isd", g: "isdReq", credit: 3, status: "other" },
+    { id: "ISDN 3002", name: "Third Year Design Project II",         cat: "isd", g: "isdReq", credit: 3, status: "other" },
+    { id: "ISDN 3010", name: "Academic & Professional Dev III",      cat: "isd", g: "isdReq", credit: 1, status: "other" },
+    { id: "ISDN 3200", name: "Graphic Communication",                cat: "isd", g: "isdReq", credit: 3, status: "other" },
+    { id: "ISDN 4001", name: "Final Year Design Project I",          cat: "isd", g: "isdReq", credit: 4, status: "other" },
+    { id: "ISDN 4002", name: "Final Year Design Project II",         cat: "isd", g: "isdReq", credit: 4, status: "other" },
+    { id: "ISDN 4010", name: "Academic & Professional Dev IV",       cat: "isd", g: "isdReq", credit: 0, status: "other" },
+
+    /* ---- 商学选修 · 创业E（需6学分，≥1门3000级） ---- */
+    { id: "ISDN 3350", name: "Global Product Development",            cat: "isd", g: "bizE", credit: 3, status: "other" },
+    { id: "ISDN 3360", name: "Product Innovations to Tech Startups",  cat: "isd", g: "bizE", credit: 3, status: "other" },
+    { id: "ISDN 4200", name: "Product Management",                    cat: "isd", g: "bizE", credit: 3, status: "other" },
+    { id: "ENTR 3100", name: "Industrial Landscape: Start a Business", cat: "isd", g: "bizE", credit: 3, status: "other" },
+    { id: "FINA 2203", name: "Fundamentals of Business Finance",      cat: "isd", g: "bizE", credit: 3, status: "other" },
+    { id: "ISOM 2030", name: "Business Protections for Innovations",  cat: "isd", g: "bizE", credit: 3, status: "other" },
+    { id: "ISOM 2700", name: "Operations Management",                 cat: "isd", g: "bizE", credit: 3, status: "other" },
+    { id: "ISOM 4020", name: "Innovation Mgmt & Tech Entrepreneurship", cat: "isd", g: "bizE", credit: 3, status: "other" },
+    { id: "MARK 2120", name: "Marketing Management",                  cat: "isd", g: "bizE", credit: 3, status: "other" },
+    { id: "TEMG 3950", name: "T&M Case Analysis & Product Innovation", cat: "isd", g: "bizE", credit: 3, status: "other" },
+    { id: "TEMG 4940", name: "T&M Prototyping & Research Project",    cat: "isd", g: "bizE", credit: 3, status: "other" },
+    { id: "TEMG 4950", name: "T&M Corporate Consulting Project",      cat: "isd", g: "bizE", credit: 3, status: "other" },
+    { id: "TEMG 4970", name: "T&M IBPC Startup Project",              cat: "isd", g: "bizE", credit: 3, status: "other" },
+
+    /* ---- 工科选修 · 项目E 高阶（3000+，需12学分） ---- */
+    { id: "ISDN 3004", name: "Advanced Sketching",                    cat: "isd", g: "projE", credit: 2, status: "other" },
+    { id: "ISDN 3150", name: "AI for Design",                         cat: "isd", g: "projE", credit: 3, status: "other" },
+    { id: "ISDN 3300", name: "Interaction Design",                    cat: "isd", g: "projE", credit: 3, status: "other" },
+    { id: "BIEN 3320", name: "Data Science for Biology & Medicine",   cat: "isd", g: "projE", credit: 3, status: "other" },
+    { id: "COMP 3111", name: "Software Engineering",                  cat: "isd", g: "projE", credit: 4, status: "other" },
+    { id: "COMP 3211", name: "Fundamentals of Artificial Intelligence", cat: "isd", g: "projE", credit: 3, status: "other" },
+    { id: "COMP 3311", name: "Database Management Systems",           cat: "isd", g: "projE", credit: 3, status: "other" },
+    { id: "COMP 3711", name: "Design and Analysis of Algorithms",     cat: "isd", g: "projE", credit: 3, status: "other" },
+    { id: "COMP 4021", name: "Internet Computing",                    cat: "isd", g: "projE", credit: 3, status: "other" },
+    { id: "COMP 4221", name: "Introduction to NLP",                   cat: "isd", g: "projE", credit: 3, status: "other" },
+    { id: "COMP 4331", name: "Data Mining",                           cat: "isd", g: "projE", credit: 3, status: "other" },
+    { id: "COMP 4411", name: "Computer Graphics",                     cat: "isd", g: "projE", credit: 3, status: "other" },
+    { id: "COMP 4421", name: "Image Processing",                      cat: "isd", g: "projE", credit: 3, status: "other" },
+    { id: "COMP 4461", name: "Human-Computer Interaction",            cat: "isd", g: "projE", credit: 3, status: "other" },
+    { id: "COMP 4462", name: "Data Visualization",                    cat: "isd", g: "projE", credit: 3, status: "other" },
+    { id: "COMP 4521", name: "Mobile Application Development",        cat: "isd", g: "projE", credit: 3, status: "other" },
+    { id: "COMP 4632", name: "Practicing Cybersecurity",              cat: "isd", g: "projE", credit: 3, status: "other" },
+    { id: "COMP 4641", name: "Social Information Network Analysis",   cat: "isd", g: "projE", credit: 3, status: "other" },
+    { id: "COMP 4651", name: "Cloud Computing and Big Data Systems",  cat: "isd", g: "projE", credit: 3, status: "other" },
+    { id: "COMP 4901", name: "Special Topics in Computer Science",    cat: "isd", g: "projE", credit: 3, status: "other" },
+    { id: "ELEC 3xxx", name: "任意 3000-level ELEC（双击编辑课号）",   cat: "isd", g: "projE", credit: 3, status: "other", editId: true },
+    { id: "ELEC 4xxx", name: "任意 4000-level ELEC（双击编辑课号）",   cat: "isd", g: "projE", credit: 3, status: "other", editId: true },
+    { id: "MECH 3030", name: "Mechanisms of Machinery",               cat: "isd", g: "projE", credit: 3, status: "other" },
+    { id: "MECH 3300", name: "Energy Conversion",                     cat: "isd", g: "projE", credit: 3, status: "other" },
+    { id: "MECH 3310", name: "Heat Transfer",                         cat: "isd", g: "projE", credit: 3, status: "other" },
+    { id: "MECH 3420", name: "Engineering Materials II",              cat: "isd", g: "projE", credit: 3, status: "other" },
+    { id: "MECH 3510", name: "Computer-Aided Design & Manufacturing", cat: "isd", g: "projE", credit: 3, status: "other" },
+    { id: "MECH 3610", name: "Control Principles",                    cat: "isd", g: "projE", credit: 3, status: "other" },
+    { id: "MECH 3907", name: "Mechatronic Design & Prototyping",      cat: "isd", g: "projE", credit: 3, status: "other" },
+    { id: "MECH 4450", name: "Introduction to Finite Element Analysis", cat: "isd", g: "projE", credit: 3, status: "other" },
+    { id: "MECH 4710", name: "Introduction to Robotics",              cat: "isd", g: "projE", credit: 3, status: "other" },
+    { id: "MECH 4740", name: "Numerical Methods in Engineering",      cat: "isd", g: "projE", credit: 3, status: "other" },
+    { id: "MATH 2011", name: "Introduction to Multivariable Calculus", cat: "isd", g: "projE", credit: 3, status: "other" },
+    { id: "MATH 2111", name: "Matrix Algebra and Applications",       cat: "isd", g: "projE", credit: 3, status: "other" },
+    { id: "MATH 2343", name: "Discrete Structures",                   cat: "isd", g: "projE", credit: 4, status: "other" },
+    { id: "MATH 2350", name: "Applied Linear Algebra & Diff Equations", cat: "isd", g: "projE", credit: 3, status: "other" },
+    { id: "MATH 2411", name: "Applied Statistics",                    cat: "isd", g: "projE", credit: 4, status: "other" },
+
+    /* ---- 工科选修 · 项目E 低阶（1000/2000级，需9学分） ---- */
+    { id: "ISDN 2210", name: "Introduction to Brand Design",          cat: "isd", g: "projE", credit: 3, status: "other" },
+    { id: "COMP 2012", name: "Object-Oriented Programming & Data Structures", cat: "isd", g: "projE", credit: 4, status: "other" },
+    { id: "COMP 2211", name: "Exploring Artificial Intelligence",     cat: "isd", g: "projE", credit: 3, status: "other" },
+    { id: "COMP 2611", name: "Computer Organization",                 cat: "isd", g: "projE", credit: 4, status: "other" },
+    { id: "ELEC 2100", name: "Signals and Systems",                   cat: "isd", g: "projE", credit: 4, status: "other" },
+    { id: "ELEC 2350", name: "Introduction to Computer Organization & Design", cat: "isd", g: "projE", credit: 4, status: "other" },
+    { id: "ELEC 2400", name: "Electronic Circuits",                   cat: "isd", g: "projE", credit: 4, status: "other" },
+    { id: "ELEC 2600", name: "Probability and Random Processes in Engineering", cat: "isd", g: "projE", credit: 4, status: "other" },
+    { id: "IEDA 2520", name: "Probability for Engineers",             cat: "isd", g: "projE", credit: 3, status: "other" },
+    { id: "MECH 2020", name: "Statics and Dynamics",                  cat: "isd", g: "projE", credit: 3, status: "other" },
+    { id: "MECH 2040", name: "Solid Mechanics I",                     cat: "isd", g: "projE", credit: 3, status: "other" },
+    { id: "MECH 2210", name: "Fluid Mechanics",                       cat: "isd", g: "projE", credit: 3, status: "other" },
+    { id: "MECH 2310", name: "Thermodynamics",                        cat: "isd", g: "projE", credit: 3, status: "other" },
+    { id: "MECH 2410", name: "Engineering Materials I",               cat: "isd", g: "projE", credit: 3, status: "other" },
+    { id: "MECH 2520", name: "Design and Manufacturing I",            cat: "isd", g: "projE", credit: 3, status: "other" },
+  ],
+};
+/* ===================== 数据区结束 ===================== */
+
+/* Common Core 领域（ISD 属 T，Broadening 须选非 T 领域，12学分=5选4） */
+const CC_AREAS = [
+  { id: "CTDL",   group: "Foundation",   label: "CTDL · Critical Thinking & Data Literacy", cr: 3 },
+  { id: "HMW",    group: "Foundation",   label: "HMW · Habits, Mindsets & Behaviors",       cr: 3 },
+  { id: "E-Comm", group: "Foundation",   label: "E-Comm · English Communication",           cr: 6 },
+  { id: "C-Comm", group: "Foundation",   label: "C-Comm · Chinese Communication",           cr: 3 },
+  { id: "UxOP",   group: "Experiencing", label: "UxOP · Experiential Opportunity",          cr: 3 },
+  { id: "BR-H",   group: "Broadening",   label: "H · Humanities",      cr: 3 },
+  { id: "BR-S",   group: "Broadening",   label: "S · Science",         cr: 3 },
+  { id: "BR-SA",  group: "Broadening",   label: "SA · Social Analysis",cr: 3 },
+  { id: "BR-ART", group: "Broadening",   label: "ART · Arts",          cr: 3 },
+  { id: "BR-SUS", group: "Broadening",   label: "SUS · Sustainability",cr: 3 },
+];
+const CC_GROUPS = [
+  { name: "Foundation（基础 · 15学分）", need: 15 },
+  { name: "Experiencing（体验 · 3学分）", need: 3 },
+  { name: "Broadening（拓宽 · 12学分，五领域选四）", need: 12 },
+];
+
+const STORE_KEY = "isd-tracker-generic-v1";
+const byId = Object.fromEntries(DATA.courses.map(c => [c.id, c]));
+let statuses = {}, renames = {}, dates = { start: "", end: "" }, ccCourses = [];
+try {
+  const saved = JSON.parse(localStorage.getItem(STORE_KEY) || "{}");
+  statuses = saved.statuses || {};
+  renames = saved.renames || {};
+  dates = saved.dates || dates;
+  ccCourses = saved.ccCourses || [];
+} catch (e) { /* ignore */ }
+Object.entries(renames).forEach(([oldId, newId]) => {
+  const c = byId[oldId];
+  if (c && !byId[newId]) {
+    c.id = newId; c.editId = true;
+    byId[newId] = c; delete byId[oldId];
+    if (statuses[oldId]) { statuses[newId] = statuses[oldId]; delete statuses[oldId]; }
+  }
+});
+DATA.courses.forEach(c => { if (!statuses[c.id]) statuses[c.id] = "other"; });
+function save() { localStorage.setItem(STORE_KEY, JSON.stringify({ statuses, renames, dates, ccCourses })); }
+function levelOf(c) {
+  const m = c.id.match(/(\d{4})/);
+  if (m) return parseInt(m[1]);
+  if (c.id.includes("3xxx")) return 3000;
+  if (c.id.includes("4xxx")) return 4000;
+  return 0;
+}
+function inGroup(c, g) { return c.g === g || (c.alt || []).some(a => a.g === g); }
+/* 重叠课程状态按大类独立：主归属用课号作键，附加归属用 "课号::组" 作键 */
+function ctxKey(c, g) { return g == null || c.g === g ? c.id : c.id + "::" + g; }
+function getStatus(key, c) { return statuses[key] !== undefined ? statuses[key] : c.status; }
+
+/* ---------- 模块A：时间（日期可自行设置） ---------- */
+function renderTime() {
+  const sp = document.getElementById("startDate"), ep = document.getElementById("endDate");
+  if (document.activeElement !== sp && sp.value !== (dates.start || "")) sp.value = dates.start || "";
+  if (document.activeElement !== ep && ep.value !== (dates.end || "")) ep.value = dates.end || "";
+  const note = document.getElementById("timeNote");
+  if (!dates.start || !dates.end) { note.textContent = "请先设置入学 / 毕业日期"; return; }
+  const s = new Date(dates.start), e = new Date(dates.end), now = new Date();
+  const pct = Math.max(0, Math.min(100, (now - s) / (e - s) * 100));
+  document.getElementById("timePct").textContent = pct.toFixed(1) + "%";
+  document.getElementById("timeFill").style.width = pct + "%";
+  note.textContent = `剩余约 ${Math.max(0, Math.round((e - now) / 86400000))} 天`;
+}
+document.getElementById("startDate").onchange = e => { dates.start = e.target.value; save(); renderTime(); };
+document.getElementById("endDate").onchange = e => { dates.end = e.target.value; save(); renderTime(); };
+
+/* ---------- 模块A：课程进度 ---------- */
+const subcatOpen = new Set(); // 各分组进度条默认折叠，点击标签行展开
+document.getElementById("subcats").addEventListener("click", e => {
+  const row = e.target.closest("[data-subcat]");
+  if (!row) return;
+  const key = row.dataset.subcat;
+  subcatOpen.has(key) ? subcatOpen.delete(key) : subcatOpen.add(key);
+  renderProgress();
+});
+function renderProgress() {
+  let got = 0, lite = 0, total = 0;
+  const need = DATA.total.need;
+  const doneCr = DATA.courses.filter(c => statuses[c.id] === "done").reduce((a, c) => a + c.credit, 0);
+  const progCr = DATA.courses.filter(c => statuses[c.id] === "progress").reduce((a, c) => a + c.credit, 0);
+  const counted = Math.min(need, doneCr);
+  const liteCr = Math.min(need - counted, progCr);
+  const pct = counted / need * 100, litePct = liteCr / need * 100;
+  document.getElementById("coursePct").textContent = pct.toFixed(1) + "%" + (liteCr ? " (+" + liteCr + "学分进行中)" : "");
+  document.getElementById("courseFill").style.width = pct + "%";
+  const lf = document.getElementById("courseFillLite");
+  lf.style.left = pct + "%"; lf.style.width = litePct + "%";
+  document.getElementById("courseNote").textContent = "深色 = 已完成，浅色 = 进行中（不计入完成进度）；超出 87 学分要求的部分不计入";
+
+  const colors = ["", "fill-1", "fill-2", "fill-3", "fill-4", "fill-5", "fill-6"];
+  document.getElementById("subcats").innerHTML = DATA.groups.map((gr, i) => {
+    // projE 拆高低两行
+    if (gr.g === "projE") return `
+      ${subBar("　├ 高阶课 (3000+)", 12, DATA.courses.filter(c => inGroup(c, "projE") && levelOf(c) >= 3000), "fill-5", "projE-hi")}
+      ${subBar("　└ 低阶课 (1000/2000级)", 9, DATA.courses.filter(c => inGroup(c, "projE") && levelOf(c) < 3000), "fill-6", "projE-lo")}`;
+    return subBar(gr.name, gr.need, DATA.courses.filter(c => inGroup(c, gr.g)), colors[i + 1], gr.g);
+  }).join("");
+
+  function subBar(label, needCr, list, color, key) {
+    const g = key.startsWith("projE") ? "projE" : key;
+    const done = list.filter(c => getStatus(ctxKey(c, g), c) === "done").reduce((a, c) => a + c.credit, 0);
+    const prog = list.filter(c => getStatus(ctxKey(c, g), c) === "progress").reduce((a, c) => a + c.credit, 0);
+    const counted = Math.min(needCr, done);
+    const liteCr = Math.min(needCr - counted, prog);
+    const p = counted / needCr * 100, lp = liteCr / needCr * 100;
+    const open = subcatOpen.has(key);
+    return `<div class="subcat">
+      <div class="bar-row" style="cursor:pointer" data-subcat="${key}">
+        <span class="bar-label">${open ? "▾" : "▸"} ${label}　已完成 ${done}（进行中 ${prog}）/ 要求 ${needCr} 学分</span>
+        <span class="bar-label">${p.toFixed(0)}%${lp ? " +" + lp.toFixed(0) + "%" : ""}</span>
+      </div>
+      <div class="track" style="${open ? "" : "display:none"}">
+        <div class="fill ${color}" style="width:${p}%"></div>
+        <div class="fill ${color} lite" style="left:${p}%;width:${lp}%"></div>
+      </div>
+    </div>`;
+  }
+}
+
+/* ---------- 模块B ---------- */
+const STS = { done: "已完成 ✅", progress: "进行中 🔄", planned: "计划选 ⭐", other: "可选" };
+
+function chipHTML(c, key) {
+  const editHint = c.editId ? " · 双击编辑课号" : "";
+  return `<span class="chip ${getStatus(key, c)}" draggable="true" data-id="${key}"
+    data-editable="${c.editId ? 1 : ""}"
+    title="${c.name} · ${c.credit}学分${editHint}">${c.id}</span>`;
+}
+
+function zoneChips(g, st, lvl) {
+  return DATA.courses.filter(c => {
+    if (!inGroup(c, g) || isBusy(c.id)) return false;
+    if (g === "projE") {
+      if (lvl === "high" && levelOf(c) < 3000) return false;
+      if (lvl === "low" && levelOf(c) >= 3000) return false;
+    }
+    const s = getStatus(ctxKey(c, g), c);
+    if (st === "done") return s === "done";
+    if (st === "progress") return s === "progress";
+    if (st === "planned") return s === "planned";
+    return s === "other" || s === "planned";
+  }).map(c => ({ c, key: ctxKey(c, g) }));
+}
+const isBusy = () => false; // 通用版无槽位匹配
+const collapsedKeys = new Set();
+let ZS = {}; // 分区 → 大类 {filter, need}，供拖拽校验
+
+function renderBoard() {
+  ZS = {};
+  DATA.groups.forEach(gr => {
+    if (gr.g === "projE") {
+      ZS["projE-hi"] = { g: "projE", need: 12, filter: c => inGroup(c, "projE") && levelOf(c) >= 3000 };
+      ZS["projE-lo"] = { g: "projE", need: 9, filter: c => inGroup(c, "projE") && levelOf(c) < 3000 };
+    } else {
+      ZS[gr.g] = { g: gr.g, need: gr.need, filter: c => inGroup(c, gr.g) };
+    }
+  });
+  const zonesHtml = DATA.groups.map(gr => {
+    const zoneDefs = gr.simple
+      ? [["done", "已完成 ✅"], ["other", "未完成 ⬜"]]
+      : gr.hidePlanned
+        ? [["done", "已完成 ✅"], ["progress", "进行中 🔄"], ["other", "可选"]]
+        : Object.entries(STS);
+    const lvl = null;
+    const groupList = DATA.courses.filter(c => inGroup(c, gr.g));
+    const doneCr = groupList.filter(c => getStatus(ctxKey(c, gr.g), c) === "done").reduce((a, c) => a + c.credit, 0);
+    const complete = doneCr >= gr.need;
+    const cKey = gr.g;
+    const collapseId = "collapse-" + gr.g;
+    const zones = zoneDefs.map(([st, label]) => {
+      const list = zoneChips(gr.g, st, lvl);
+      const isCollapsible = complete && list.length > 0 && st !== "done";
+      const collapsed = isCollapsible && collapsedKeys.has(cKey);
+      return `<div>
+        <div class="zone-title">${label} <span class="count">（${list.length}）</span>${
+          isCollapsible ? ` <a href="javascript:void(0)" data-collapse="${cKey}"
+            style="font-size:11px;color:var(--accent);font-weight:400">${collapsed ? "▸ 展开" : "▾ 收起"}</a>` : ""
+        }</div>
+        <div class="drop-zone" data-status="${st}" data-zs="${cKey}" id="${collapseId}" style="${collapsed ? "display:none" : ""}">
+          ${collapsed ? "" : (list.map(x => chipHTML(x.c, x.key)).join("") || `<span class="empty-hint">拖动课号到这里</span>`)}
+        </div>
+      </div>`;
+    }).join("");
+    const progLabel = ` <span style="font-weight:700">（已完成 ${Math.min(doneCr, gr.need)} / ${gr.need} 学分）${complete ? " ✅" : ""}</span>`;
+    let html = `<div class="slot-group-title" style="color:#4f6ef7;margin-top:14px">${gr.name}${progLabel}</div>
+      <div class="zone-grid">${zones}</div>`;
+    if (gr.g === "projE") {
+      const hi = DATA.courses.filter(c => inGroup(c, "projE") && levelOf(c) >= 3000);
+      const lo = DATA.courses.filter(c => inGroup(c, "projE") && levelOf(c) < 3000);
+      const hiDone = hi.filter(c => getStatus(ctxKey(c, "projE"), c) === "done").reduce((a, c) => a + c.credit, 0);
+      const loDone = lo.filter(c => getStatus(ctxKey(c, "projE"), c) === "done").reduce((a, c) => a + c.credit, 0);
+      html = `<div class="slot-group-title" style="color:#4f6ef7;margin-top:14px">${gr.name}${progLabel}</div>
+        <div class="zone-grid">${subZones("高阶课 (3000+，需12学分)", "high", hiDone, 12, cKey + "-hi", complete)}</div>
+        <div class="zone-grid">${subZones("低阶课 (1000/2000级，需9学分)", "low", loDone, 9, cKey + "-lo", complete)}</div>`;
+    }
+    return html;
+
+    function subZones(title, level, doneCr, needCr, key, grpComplete) {
+      const defs = [["done", "已完成 ✅"], ["progress", "进行中 🔄"], ["planned", "计划选 ⭐"], ["other", "可选"]];
+      const zs = defs.map(([st, label]) => {
+        const list = zoneChips("projE", st, level);
+        const coll = grpComplete && list.length > 0 && st !== "done" && collapsedKeys.has(key);
+        return `<div>
+          <div class="zone-title">${label} <span class="count">（${list.length}）</span>${
+            grpComplete && list.length > 0 && st !== "done" ? ` <a href="javascript:void(0)" data-collapse="${key}"
+              style="font-size:11px;color:var(--accent);font-weight:400">${coll ? "▸ 展开" : "▾ 收起"}</a>` : ""
+          }</div>
+          <div class="drop-zone" data-status="${st}" data-zs="${key}" id="${key}" style="${coll ? "display:none" : ""}">
+            ${coll ? "" : (list.map(x => chipHTML(x.c, x.key)).join("") || `<span class="empty-hint">拖动课号到这里</span>`)}
+          </div>
+        </div>`;
+      }).join("");
+      const doneLbl = Math.min(doneCr, needCr);
+      return `<div class="slot-group-title" style="color:#4f6ef7;margin-top:10px">${title} <span style="font-weight:700">（已完成 ${doneLbl} / ${needCr} 学分）${doneCr >= needCr ? " ✅" : ""}</span></div>` + zs;
+    }
+  }).join("");
+
+  document.getElementById("moduleB").innerHTML = `
+    <div class="course-card">
+      <h2>ISD 专业课 <span style="font-weight:400;font-size:13px;color:var(--muted)">要求 ${DATA.total.need} ${DATA.total.unit}</span></h2>
+      ${zonesHtml}
+    </div>
+    <div class="course-card">
+      <h2>Common Core <span style="font-weight:400;font-size:13px;color:var(--muted)">要求 30 学分 · 已计入 <b id="ccTotalDone" style="color:var(--accent)">0</b> / 30</span></h2>
+      ${renderCC()}
+      <div class="cc-hint">
+        在各领域框内输入课号添加（可在课号后加学分，如 "LANG 1407 3"，默认3学分）；单击课号方块 = 标记已完成；右键单击 = 删除。
+        ISD 属 Technology 分类，Broadening 须选非 T 领域：H / S / SA / ART / SUS 五选四。
+      </div>
+      <div class="tools"><button class="reset" id="resetBtn">重置全部分类</button></div>
+    </div>`;
+  document.getElementById("resetBtn").onclick = () => {
+    if (confirm("重置所有状态、Common Core 记录和课号编辑？")) { localStorage.removeItem(STORE_KEY); location.reload(); }
+  };
+}
+
+/* ---------- Common Core（全部由用户输入） ---------- */
+function ccGroupDone(groupName) {
+  return ccCourses.filter(f => f.group === groupName && f.done).reduce((a, f) => a + f.credit, 0);
+}
+function renderCC() {
+  const total = ccGroupDone("Foundation") + ccGroupDone("Experiencing") + Math.min(12, ccGroupDone("Broadening"));
+  setTimeout(() => { const el = document.getElementById("ccTotalDone"); if (el) { el.textContent = Math.min(30, total); el.style.color = total >= 30 ? "#34a374" : "var(--accent)"; } }, 0);
+  return CC_GROUPS.map(g => {
+    const done = ccGroupDone(g.name.startsWith("Foundation") ? "Foundation" : g.name.startsWith("Experiencing") ? "Experiencing" : "Broadening");
+    const shown = Math.min(done, g.need);
+    return `<div class="slot-group-title" style="color:#4f6ef7;margin-top:14px">${g.name}
+        <span style="font-weight:700">（已完成 ${shown} / ${g.need} 学分）${done >= g.need ? " ✅" : ""}</span></div>
+      <div class="cc-area-row">${CC_AREAS.filter(a => a.group ===
+        (g.name.startsWith("Foundation") ? "Foundation" : g.name.startsWith("Experiencing") ? "Experiencing" : "Broadening")
+      ).map(a => {
+        const items = ccCourses.map((f, i) => ({ f, i })).filter(x => x.f.area === a.id);
+        return `<div class="cc-area">
+          <span class="area-label">${a.label} <span class="cr">· ${a.cr}学分</span></span>
+          <div class="area-chips">${items.map(x =>
+            `<span class="chip ${x.f.done ? "done" : "other"}" data-cc="${x.i}" title="单击标记已完成 · 右键单击删除">${x.f.id} · ${x.f.credit}学分</span>`
+          ).join("") || `<span class="empty-hint">下方输入课号</span>`}</div>
+          <div class="cc-add">
+            <input id="cc-in-${a.id}" placeholder="课号 [学分]" />
+            <button data-cc-add="${a.id}">＋</button>
+          </div>
+        </div>`;
+      }).join("")}</div>`;
+  }).join("");
+}
+
+/* ---------- 拖拽 ---------- */
+let drag = null;
+document.addEventListener("dragstart", e => {
+  const chip = e.target.closest(".chip");
+  if (!chip) return;
+  drag = { id: chip.dataset.id };
+  chip.classList.add("dragging");
+  e.dataTransfer.effectAllowed = "move";
+});
+document.addEventListener("dragend", () => {
+  document.querySelectorAll(".chip.dragging").forEach(c => c.classList.remove("dragging"));
+  drag = null;
+});
+document.getElementById("moduleB").addEventListener("dragover", e => {
+  const t = e.target.closest(".drop-zone");
+  if (!t) return;
+  e.preventDefault();
+  t.classList.add("drag-over");
+});
+document.getElementById("moduleB").addEventListener("dragleave", e => {
+  e.target.closest(".drop-zone")?.classList.remove("drag-over");
+});
+/* 大类是否已修满 */
+function groupFull(key) {
+  const zs = ZS[key];
+  if (!zs || !zs.need) return false;
+  const doneCr = DATA.courses.filter(zs.filter)
+    .filter(c => getStatus(ctxKey(c, zs.g), c) === "done").reduce((a, c) => a + c.credit, 0);
+  return doneCr >= zs.need;
+}
+
+document.getElementById("moduleB").addEventListener("drop", e => {
+  const zone = e.target.closest(".drop-zone");
+  if (!zone || !drag) return;
+  if (zone.dataset.status === "planned" && groupFull(zone.dataset.zs)) {
+    alert("该大类学分已修满，不能再计划更多课程");
+    return;
+  }
+  statuses[drag.id] = zone.dataset.status;
+  save(); renderAll();
+});
+document.getElementById("moduleB").addEventListener("dblclick", e => {
+  const chip = e.target.closest(".chip");
+  if (!chip || !chip.dataset.editable) return;
+  const id = chip.dataset.id;
+  const newId = (prompt(`将 ${id} 替换为实际课号：`, id) || "").trim().toUpperCase();
+  if (!newId || newId === id) return;
+  if (byId[newId]) { alert("该课号已存在"); return; }
+  const c = byId[id];
+  renames[id] = newId;
+  c.id = newId; c.editId = true; c.name = c.name.replace(/（双击编辑课号）/, "");
+  byId[newId] = c; delete byId[id];
+  if (statuses[id]) { statuses[newId] = statuses[id]; delete statuses[id]; }
+  save(); renderAll();
+});
+document.getElementById("moduleB").addEventListener("click", e => {
+  const toggle = e.target.closest("a[data-collapse]");
+  if (!toggle) return;
+  const key = toggle.dataset.collapse;
+  collapsedKeys.has(key) ? collapsedKeys.delete(key) : collapsedKeys.add(key);
+  renderBoard();
+});
+
+/* ---------- Common Core 交互 ---------- */
+function parseCCInput(raw) {
+  const m = raw.trim().match(/^(.+?)\s+(\d+(?:\.\d+)?)$/);
+  if (m) return { id: m[1].trim().toUpperCase(), credit: parseFloat(m[2]) };
+  return { id: raw.trim().toUpperCase(), credit: 3 };
+}
+function wireCC() {
+  const mb = document.getElementById("moduleB");
+  /* 添加（按钮或输入框回车） */
+  const addCourse = areaId => {
+    const inp = document.getElementById("cc-in-" + areaId);
+    if (!inp) return;
+    const { id, credit } = parseCCInput(inp.value);
+    if (!id) return;
+    if (ccCourses.some(f => f.area === areaId && f.id === id)) { alert("该课号已在此领域添加"); return; }
+    ccCourses.push({ area: areaId, id, credit, done: false });
+    save(); renderAll();
+  };
+  mb.addEventListener("click", e => {
+    const addBtn = e.target.closest("[data-cc-add]");
+    if (addBtn) { addCourse(addBtn.dataset.ccAdd); return; }
+    const chip = e.target.closest("[data-cc]");
+    if (chip) {
+      const f = ccCourses[+chip.dataset.cc];
+      if (f) { f.done = !f.done; save(); renderAll(); }
+    }
+  });
+  mb.addEventListener("contextmenu", e => {
+    const chip = e.target.closest("[data-cc]");
+    if (!chip) return;
+    e.preventDefault();
+    ccCourses.splice(+chip.dataset.cc, 1);
+    save(); renderAll();
+  });
+  mb.addEventListener("keydown", e => {
+    if (e.key !== "Enter") return;
+    const inp = e.target.closest("input[id^='cc-in-']");
+    if (inp) addCourse(inp.id.replace("cc-in-", ""));
+  });
+}
+
+function renderAll() { renderProgress(); renderBoard(); }
+renderTime();
+renderAll();
+wireCC();
+setInterval(renderTime, 1000);
+</script>
+</body>
+</html>
