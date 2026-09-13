@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>大学进度记录 · ISDN</title>
+<title>ISD 学业进度记录 · 通用版</title>
 <style>
   :root {
     --bg: #f4f6fa; --card: #ffffff; --text: #2b2f3a; --muted: #7a8194;
@@ -19,7 +19,7 @@
   .moduleA { display: grid; gap: 16px; margin-bottom: 32px; }
   .progress-card { background: var(--card); border-radius: 14px; padding: 20px 24px; box-shadow: 0 1px 4px rgba(30,40,80,.06); }
   .progress-card h2 { font-size: 15px; margin-bottom: 12px; }
-  .bar-row { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 6px; }
+  .bar-row { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 6px; gap: 10px; flex-wrap: wrap; }
   .bar-label { font-size: 13px; color: var(--muted); }
   .bar-pct { font-size: 20px; font-weight: 700; }
   .track { height: 14px; background: #eef1f7; border-radius: 999px; overflow: hidden; margin-bottom: 4px; position: relative; }
@@ -31,6 +31,11 @@
   .fill-1 { background: linear-gradient(90deg,#34a374,#6cc79c); }
   .fill-2 { background: linear-gradient(90deg,#ef8f3c,#f7b57a); }
   .fill-3 { background: linear-gradient(90deg,#9a66e8,#c1a4f5); }
+  .fill-4 { background: linear-gradient(90deg,#e0596e,#ef95a4); }
+  .fill-5 { background: linear-gradient(90deg,#2ea7b8,#7cc8d4); }
+  .fill-6 { background: linear-gradient(90deg,#d6902c,#e8b863); }
+  .date-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .date-row input { border: 1px solid var(--border); border-radius: 8px; padding: 5px 10px; font-size: 13px; }
 
   /* ---------- 模块B ---------- */
   .moduleB { display: grid; gap: 18px; }
@@ -55,28 +60,8 @@
   .chip.progress { background: #e3efff; border-color: #b3d1fb; color: #2258c4; }
   .chip.planned  { background: #fdf1e3; border-color: #f3d4ab; color: #a05e14; }
   .chip.other    { background: #f0f1f5; border-color: var(--border); color: #555c6e; }
-  .chip.custom   { border-style: dotted; }
   .empty-hint { color: var(--muted); font-size: 12px; align-self: center; padding: 6px; }
-
-  /* CC 领域槽位 */
-  .slot-board { background: #f8f9fc; border-radius: 12px; padding: 16px; margin-bottom: 18px; }
   .slot-group-title { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; margin: 10px 0 8px; }
-  .slot-row { display: flex; flex-wrap: wrap; gap: 10px; }
-  .slot {
-    border: 2px dashed #cdd4e2; border-radius: 10px; padding: 10px 14px; min-width: 170px; min-height: 46px;
-    background: #fff; transition: border-color .15s, background .15s; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
-  }
-  .slot.drag-over { border-color: var(--accent); background: #f0f4ff; }
-  .slot .slot-label { font-size: 12px; color: var(--muted); }
-  .slot-hint { font-size: 11px; color: var(--muted); margin-top: 10px; line-height: 1.5; }
-  .add-row { display: flex; gap: 8px; margin-top: 12px; align-items: center; }
-  .add-row input {
-    border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; font-size: 13px; width: 180px;
-  }
-  .add-row button {
-    border: 1px solid var(--accent); background: var(--accent); color: #fff; border-radius: 8px;
-    padding: 6px 14px; font-size: 13px; cursor: pointer;
-  }
 
   .tools { margin-top: 16px; font-size: 12px; color: var(--muted); text-align: center; }
   button.reset {
@@ -84,22 +69,56 @@
     padding: 5px 12px; border-radius: 8px; cursor: pointer; font-size: 12px;
   }
   button.reset:hover { color: var(--text); border-color: #c8cede; }
+
+  /* ---------- Common Core ---------- */
+  .cc-area-row { display: flex; flex-wrap: wrap; gap: 10px; }
+  .cc-area {
+    border: 2px dashed #cdd4e2; border-radius: 10px; padding: 10px 12px; background: #fff;
+    flex: 1 1 230px; display: flex; flex-direction: column; gap: 6px; min-width: 210px;
+  }
+  .cc-area .area-label { font-size: 12px; color: var(--muted); font-weight: 700; }
+  .cc-area .area-label .cr { font-weight: 400; }
+  .cc-area .area-chips { display: flex; flex-wrap: wrap; gap: 6px; min-height: 28px; align-items: center; }
+  .cc-add { display: flex; gap: 4px; }
+  .cc-add input { border: 1px solid var(--border); border-radius: 6px; padding: 4px 8px; font-size: 12px; flex: 1; min-width: 0; }
+  .cc-add button { border: 1px solid var(--accent); background: var(--accent); color: #fff; border-radius: 6px; padding: 4px 10px; font-size: 12px; cursor: pointer; white-space: nowrap; }
+  .cc-hint { font-size: 11px; color: var(--muted); margin-top: 6px; line-height: 1.5; }
+
+  .add-row { display: flex; gap: 8px; margin-top: 12px; align-items: center; flex-wrap: wrap; }
+  .add-row input { border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; font-size: 13px; width: 180px; }
+  .add-row button { border: 1px solid var(--accent); background: var(--accent); color: #fff; border-radius: 8px; padding: 6px 14px; font-size: 13px; cursor: pointer; white-space: nowrap; }
+  .add-row select { border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; font-size: 13px; background: #fff; }
+  .add-row textarea {
+    border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; font-size: 13px;
+    flex: 1; width: auto; min-width: 240px; font-family: inherit; resize: vertical;
+  }
+  .ext-type-badge {
+    font-size: 11px; font-weight: 700; color: #7a4fe0; background: #f0e9fd;
+    border: 1px solid #d9c8fa; padding: 2px 10px; border-radius: 999px; vertical-align: middle;
+  }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <h1>我的大学进度 · BSc ISDN</h1>
+  <h1>ISD 学业进度记录 · 通用版</h1>
   <div class="subtitle">
-    三大板块：ISD 专业课 / Common Core / PBS Minor。拖动课号方块改变状态（已完成 ✅ / 进行中 🔄 / 计划选 ⭐ / 其他）。
-    Common Core 顶部是「领域槽位」：把课程拖到领域槽上即匹配；拖回分区即解除；点击槽内方块可切换状态；自定义添加的课右键单击删除。
+    适用于 BSc in Integrative Systems and Design（4Y）的进度记录工具。
+    拖动课号方块改变状态（已完成 ✅ / 进行中 🔄 / 计划选 ⭐ / 可选），大类修满后自动收起未完成栏；
+    ELEC 3xxx / 4xxx 占位方块双击可填入实际课号。所有记录仅保存在你自己的浏览器中。
   </div>
 
-  <!-- 模块A -->
   <div class="moduleA">
     <div class="progress-card">
-      <div class="bar-row"><h2>1 · 时间进度</h2><span class="bar-pct" id="timePct">--%</span></div>
+      <div class="bar-row">
+        <h2>1 · 时间进度</h2>
+        <span class="bar-pct" id="timePct">--%</span>
+      </div>
       <div class="track"><div class="fill" id="timeFill" style="width:0%"></div></div>
-      <div class="bar-note" id="timeNote"></div>
+      <div class="bar-note date-row">
+        <label>入学 <input type="date" id="startDate"></label>
+        <label>毕业 <input type="date" id="endDate"></label>
+        <span id="timeNote"></span>
+      </div>
     </div>
     <div class="progress-card">
       <div class="bar-row"><h2>2 · 课程进度</h2><span class="bar-pct" id="coursePct">--%</span></div>
@@ -109,7 +128,6 @@
     </div>
   </div>
 
-  <!-- 模块B -->
   <div class="moduleB" id="moduleB"></div>
 
   <!-- 暑校/寒校计划 -->
@@ -134,80 +152,103 @@
       <button id="exAddBtn">＋ 添加课号</button>
     </div>
   </div>
+
+  <!-- 延伸项目 -->
+  <div class="course-card" id="extCard" style="margin-top:18px">
+    <h2>延伸项目 <span id="extBadge"></span></h2>
+    <div class="desc">
+      选择延伸类型并填写项目名称；在下方粘贴该项目课程列表（每行一门：课号 课程名 学分，学分可省略默认3），
+      点击「生成课程方块」自动创建，并分为必修 / 选修左右两版面，可自由拖拽归类。
+    </div>
+    <div class="add-row" style="margin-top:0">
+      <select id="extType">
+        <option value="">— 选择类型 —</option>
+        <option value="Double Major">Double Major</option>
+        <option value="Extend Major">Extend Major</option>
+        <option value="Minor">Minor</option>
+      </select>
+      <input id="extName" placeholder="项目名称，如 Computer Science" style="width:auto;flex:1">
+    </div>
+    <div class="add-row">
+      <textarea id="extPaste" rows="4" placeholder="每行一门课，例如：&#10;COMP 2012 Object-Oriented Programming and Data Structures 4&#10;MATH 2343 Discrete Structures 4&#10;COMP 3711 Design and Analysis of Algorithms"></textarea>
+      <button id="extGenBtn">生成课程方块</button>
+    </div>
+    <div class="zone-grid" style="margin-top:12px">
+      <div>
+        <div class="zone-title">必修 <span class="count" id="extReqCnt"></span></div>
+        <div id="extReqZones"></div>
+      </div>
+      <div>
+        <div class="zone-title">选修 <span class="count" id="extEleCnt"></span></div>
+        <div id="extEleZones"></div>
+      </div>
+    </div>
+    <div class="cc-hint">拖动方块可跨必修/选修、跨状态栏自由移动（拖到目标栏即可）；单击方块 = 标记已完成/取消；右键单击 = 删除。重新生成会覆盖现有方块。</div>
+  </div>
 </div>
 
 <script>
 /* =====================================================
- *  ★★★ 数据区 ★★★
- *  cat: "isd" | "cc" | "pbs"    g: 板块内子分组
- *  status: "done" | "progress" | "planned" | "other"
+ *  ★★★ ISD 课程数据（2025-26 4Y curriculum）★★★
+ *  g: engReq 工科必修 | langReq 语言必修 | isdReq ISDN必修
+ *     bizE 创业E | projE 项目E
+ *  初始全部为 "other"，由使用者自行拖动分类
  * ===================================================== */
 const DATA = {
-  time: { start: "2025-09-01", end: "2029-06-30" },
+  total: { name: "专业课 (ISD)", need: 87, unit: "学分" },
 
-  requirements: {
-    isd: { name: "专业课 (ISD)",  need: 87, unit: "学分" },
-    cc:  { name: "Common Core",   need: 30, unit: "学分" },
-    pbs: { name: "Minor: PBS",    need: 18, unit: "学分" },
-  },
-
-  /* Common Core 领域槽位（你的专业属 T，Broadening 须选非 T：H / S / SA / ART，共12学分4门） */
-  ccSlots: [
-    { id: "CTDL",   group: "Foundation",   cr: 3, label: "CTDL · Critical Thinking & Data Literacy" },
-    { id: "HMW",    group: "Foundation",   cr: 3, label: "HMW · Habits, Mindsets & Behaviors" },
-    { id: "E-Comm", group: "Foundation",   cr: 6, label: "E-Comm · English Communication (6学分·可放2门)" },
-    { id: "C-Comm", group: "Foundation",   cr: 3, label: "C-Comm · Chinese Communication" },
-    { id: "UxOP",   group: "Experiencing", cr: 3, label: "UxOP · Undergraduate Experiential Opportunity" },
-    { id: "BR-H",   group: "Broadening",   cr: 3, label: "H · Humanities" },
-    { id: "BR-S",   group: "Broadening",   cr: 3, label: "S · Science" },
-    { id: "BR-SA",  group: "Broadening",   cr: 3, label: "SA · Social Analysis" },
-    { id: "BR-ART", group: "Broadening",   cr: 3, label: "ART · Arts" },
+  groups: [
+    { g: "engReq",  name: "工科必修 · COMP / MATH / PHYS", need: 12 },
+    { g: "langReq", name: "语言必修 · LANG", need: 3, simple: true },
+    { g: "isdReq",  name: "ISDN 必修", need: 45, hidePlanned: true },
+    { g: "bizE",    name: "商学选修 · 创业E（需6学分，≥1门3000级）", need: 6 },
+    { g: "projE",   name: "工科选修 · 项目E（需21学分：高阶12 + 低阶9，≥12学分3000级，1000级≤3学分）", need: 21 },
   ],
 
   courses: [
-    /* ============ ISD · 工科必修（要求12学分：COMP + MATH + PHYS） ============ */
-    { id: "COMP 1023",  name: "Introduction to Python",              cat: "isd", g: "engReq", credit: 3, status: "done" },
-    { id: "COMP 1022P", name: "Introduction to Computing with Java（也可计入项目E低阶）", cat: "isd", g: "engReq", credit: 3, status: "other", alt: [{ cat: "isd", g: "projE" }] },
-    { id: "COMP 2011",  name: "Programming with C++（也可计入项目E低阶）",        cat: "isd", g: "engReq", credit: 4, status: "other", alt: [{ cat: "isd", g: "projE" }] },
+    /* ---- 工科必修（要求12学分：COMP + MATH + PHYS） ---- */
+    { id: "COMP 1023",  name: "Introduction to Python",              cat: "isd", g: "engReq", credit: 3, status: "other", alt: [{ cat: "isd", g: "projE" }] },
+    { id: "COMP 1022P", name: "Introduction to Computing with Java", cat: "isd", g: "engReq", credit: 3, status: "other", alt: [{ cat: "isd", g: "projE" }] },
+    { id: "COMP 2011",  name: "Programming with C++",                cat: "isd", g: "engReq", credit: 4, status: "other", alt: [{ cat: "isd", g: "projE" }] },
     { id: "COMP 2012H", name: "Honors OOP & Data Structures",        cat: "isd", g: "engReq", credit: 4, status: "other" },
-    { id: "MATH 1006",  name: "Calculus, Vectors & Matrices (转学分)", cat: "isd", g: "engReq", credit: 4, status: "done" },
-    { id: "MATH 1013",  name: "Calculus I",                          cat: "isd", g: "engReq", credit: 3, status: "done" },
-    { id: "MATH 1014",  name: "Calculus II",                         cat: "isd", g: "engReq", credit: 3, status: "done" },
+    { id: "MATH 1006",  name: "Calculus, Vectors & Matrices",        cat: "isd", g: "engReq", credit: 4, status: "other" },
+    { id: "MATH 1013",  name: "Calculus I",                          cat: "isd", g: "engReq", credit: 3, status: "other" },
+    { id: "MATH 1014",  name: "Calculus II",                         cat: "isd", g: "engReq", credit: 3, status: "other" },
     { id: "MATH 1020",  name: "Accelerated Calculus",                cat: "isd", g: "engReq", credit: 4, status: "other" },
     { id: "MATH 1023",  name: "Honors Calculus I",                   cat: "isd", g: "engReq", credit: 3, status: "other" },
     { id: "MATH 1024",  name: "Honors Calculus II",                  cat: "isd", g: "engReq", credit: 3, status: "other" },
     { id: "PHYS 1101",  name: "Introductory Physics",                cat: "isd", g: "engReq", credit: 3, status: "other" },
-    { id: "PHYS 1111",  name: "General Physics I",                   cat: "isd", g: "engReq", credit: 3, status: "done" },
+    { id: "PHYS 1111",  name: "General Physics I",                   cat: "isd", g: "engReq", credit: 3, status: "other" },
     { id: "PHYS 1112",  name: "General Physics I with Calculus",     cat: "isd", g: "engReq", credit: 4, status: "other" },
     { id: "PHYS 1312",  name: "Honors General Physics I",            cat: "isd", g: "engReq", credit: 3, status: "other" },
 
-    /* ============ ISD · 语言必修 ============ */
+    /* ---- 语言必修（3学分） ---- */
     { id: "LANG 4036",  name: "Technical Communication for Technology Projects", cat: "isd", g: "langReq", credit: 3, status: "other" },
 
-    /* ============ ISD · ISDN 必修 ============ */
-    { id: "ISDN 1001", name: "Introduction to ISD",                  cat: "isd", g: "isdReq", credit: 3, status: "done" },
-    { id: "ISDN 1004", name: "Sketching",                             cat: "isd", g: "isdReq", credit: 1, status: "done" },
-    { id: "ISDN 1007", name: "Design Thinking to Design Action",      cat: "isd", g: "isdReq", credit: 3, status: "done" },
-    { id: "ISDN 1010", name: "Academic & Professional Dev I",         cat: "isd", g: "isdReq", credit: 1, status: "done" },
-    { id: "ISDN 1011", name: "Industrial Training",                   cat: "isd", g: "isdReq", credit: 0, status: "done" },
-    { id: "ISDN 2001", name: "Second Year Design Project I",          cat: "isd", g: "isdReq", credit: 1, status: "progress" },
-    { id: "ISDN 2002", name: "Second Year Design Project II",         cat: "isd", g: "isdReq", credit: 4, status: "other" },
-    { id: "ISDN 2010", name: "Academic & Professional Dev II",        cat: "isd", g: "isdReq", credit: 0, status: "progress" },
-    { id: "ISDN 2200", name: "Systems Thinking and Design",           cat: "isd", g: "isdReq", credit: 1, status: "other" },
-    { id: "ISDN 2300", name: "Introduction to 3D Design",             cat: "isd", g: "isdReq", credit: 3, status: "progress" },
-    { id: "ISDN 2400", name: "Physical Prototyping",                  cat: "isd", g: "isdReq", credit: 3, status: "other" },
-    { id: "ISDN 2601", name: "Explore World thru Smart Mechatronics", cat: "isd", g: "isdReq", credit: 3, status: "progress" },
-    { id: "ISDN 2602", name: "Internet of Things: ISD",               cat: "isd", g: "isdReq", credit: 3, status: "progress" },
-    { id: "ISDN 2603", name: "Materials, Shape and Design",           cat: "isd", g: "isdReq", credit: 3, status: "other" },
-    { id: "ISDN 3001", name: "Third Year Design Project I",           cat: "isd", g: "isdReq", credit: 3, status: "other" },
-    { id: "ISDN 3002", name: "Third Year Design Project II",          cat: "isd", g: "isdReq", credit: 3, status: "other" },
-    { id: "ISDN 3010", name: "Academic & Professional Dev III",       cat: "isd", g: "isdReq", credit: 1, status: "other" },
-    { id: "ISDN 3200", name: "Graphic Communication",                 cat: "isd", g: "isdReq", credit: 3, status: "other" },
-    { id: "ISDN 4001", name: "Final Year Design Project I",           cat: "isd", g: "isdReq", credit: 4, status: "other" },
-    { id: "ISDN 4002", name: "Final Year Design Project II",          cat: "isd", g: "isdReq", credit: 4, status: "other" },
-    { id: "ISDN 4010", name: "Academic & Professional Dev IV",        cat: "isd", g: "isdReq", credit: 0, status: "other" },
+    /* ---- ISDN 必修（45学分，课程由 pre-enroll 分配） ---- */
+    { id: "ISDN 1001", name: "Introduction to ISD",                  cat: "isd", g: "isdReq", credit: 3, status: "other" },
+    { id: "ISDN 1004", name: "Sketching",                            cat: "isd", g: "isdReq", credit: 1, status: "other" },
+    { id: "ISDN 1007", name: "Design Thinking to Design Action",     cat: "isd", g: "isdReq", credit: 3, status: "other" },
+    { id: "ISDN 1010", name: "Academic & Professional Dev I",        cat: "isd", g: "isdReq", credit: 1, status: "other" },
+    { id: "ISDN 1011", name: "Industrial Training",                  cat: "isd", g: "isdReq", credit: 0, status: "other" },
+    { id: "ISDN 2001", name: "Second Year Design Project I",         cat: "isd", g: "isdReq", credit: 1, status: "other" },
+    { id: "ISDN 2002", name: "Second Year Design Project II",        cat: "isd", g: "isdReq", credit: 4, status: "other" },
+    { id: "ISDN 2010", name: "Academic & Professional Dev II",       cat: "isd", g: "isdReq", credit: 0, status: "other" },
+    { id: "ISDN 2200", name: "Systems Thinking and Design",          cat: "isd", g: "isdReq", credit: 1, status: "other" },
+    { id: "ISDN 2300", name: "Introduction to 3D Design",            cat: "isd", g: "isdReq", credit: 3, status: "other" },
+    { id: "ISDN 2400", name: "Physical Prototyping",                 cat: "isd", g: "isdReq", credit: 3, status: "other" },
+    { id: "ISDN 2601", name: "Explore World thru Smart Mechatronics",cat: "isd", g: "isdReq", credit: 3, status: "other" },
+    { id: "ISDN 2602", name: "Internet of Things: ISD",              cat: "isd", g: "isdReq", credit: 3, status: "other" },
+    { id: "ISDN 2603", name: "Materials, Shape and Design",          cat: "isd", g: "isdReq", credit: 3, status: "other" },
+    { id: "ISDN 3001", name: "Third Year Design Project I",          cat: "isd", g: "isdReq", credit: 3, status: "other" },
+    { id: "ISDN 3002", name: "Third Year Design Project II",         cat: "isd", g: "isdReq", credit: 3, status: "other" },
+    { id: "ISDN 3010", name: "Academic & Professional Dev III",      cat: "isd", g: "isdReq", credit: 1, status: "other" },
+    { id: "ISDN 3200", name: "Graphic Communication",                cat: "isd", g: "isdReq", credit: 3, status: "other" },
+    { id: "ISDN 4001", name: "Final Year Design Project I",          cat: "isd", g: "isdReq", credit: 4, status: "other" },
+    { id: "ISDN 4002", name: "Final Year Design Project II",         cat: "isd", g: "isdReq", credit: 4, status: "other" },
+    { id: "ISDN 4010", name: "Academic & Professional Dev IV",       cat: "isd", g: "isdReq", credit: 0, status: "other" },
 
-    /* ============ ISD · 商学选修 创业E（要求6学分，≥1门3000级） ============ */
+    /* ---- 商学选修 · 创业E（需6学分，≥1门3000级） ---- */
     { id: "ISDN 3350", name: "Global Product Development",            cat: "isd", g: "bizE", credit: 3, status: "other" },
     { id: "ISDN 3360", name: "Product Innovations to Tech Startups",  cat: "isd", g: "bizE", credit: 3, status: "other" },
     { id: "ISDN 4200", name: "Product Management",                    cat: "isd", g: "bizE", credit: 3, status: "other" },
@@ -216,18 +257,16 @@ const DATA = {
     { id: "ISOM 2030", name: "Business Protections for Innovations",  cat: "isd", g: "bizE", credit: 3, status: "other" },
     { id: "ISOM 2700", name: "Operations Management",                 cat: "isd", g: "bizE", credit: 3, status: "other" },
     { id: "ISOM 4020", name: "Innovation Mgmt & Tech Entrepreneurship", cat: "isd", g: "bizE", credit: 3, status: "other" },
-    { id: "MARK 2120", name: "Marketing Management（同时计入 PBS List B）", cat: "isd", g: "bizE", credit: 3, status: "other", alt: [{ cat: "pbs", g: "pbsListB" }] },
+    { id: "MARK 2120", name: "Marketing Management",                  cat: "isd", g: "bizE", credit: 3, status: "other" },
     { id: "TEMG 3950", name: "T&M Case Analysis & Product Innovation", cat: "isd", g: "bizE", credit: 3, status: "other" },
     { id: "TEMG 4940", name: "T&M Prototyping & Research Project",    cat: "isd", g: "bizE", credit: 3, status: "other" },
     { id: "TEMG 4950", name: "T&M Corporate Consulting Project",      cat: "isd", g: "bizE", credit: 3, status: "other" },
     { id: "TEMG 4970", name: "T&M IBPC Startup Project",              cat: "isd", g: "bizE", credit: 3, status: "other" },
 
-    /* ============ ISD · 工科选修 项目E（要求21学分，≥12学分3000级，1000级≤3学分） ============ */
-    /* --- 高阶 3000+ --- */
+    /* ---- 工科选修 · 项目E 高阶（3000+，需12学分） ---- */
     { id: "ISDN 3004", name: "Advanced Sketching",                    cat: "isd", g: "projE", credit: 2, status: "other" },
     { id: "ISDN 3150", name: "AI for Design",                         cat: "isd", g: "projE", credit: 3, status: "other" },
-    { id: "ISDN 3300", name: "Interaction Design",                    cat: "isd", g: "projE", credit: 3, status: "progress" },
-    { id: "ISDN 3000D", name: "Maker (Special Topics)",               cat: "isd", g: "projE", credit: 3, status: "done" },
+    { id: "ISDN 3300", name: "Interaction Design",                    cat: "isd", g: "projE", credit: 3, status: "other" },
     { id: "BIEN 3320", name: "Data Science for Biology & Medicine",   cat: "isd", g: "projE", credit: 3, status: "other" },
     { id: "COMP 3111", name: "Software Engineering",                  cat: "isd", g: "projE", credit: 4, status: "other" },
     { id: "COMP 3211", name: "Fundamentals of Artificial Intelligence", cat: "isd", g: "projE", credit: 3, status: "other" },
@@ -262,10 +301,11 @@ const DATA = {
     { id: "MATH 2343", name: "Discrete Structures",                   cat: "isd", g: "projE", credit: 4, status: "other" },
     { id: "MATH 2350", name: "Applied Linear Algebra & Diff Equations", cat: "isd", g: "projE", credit: 3, status: "other" },
     { id: "MATH 2411", name: "Applied Statistics",                    cat: "isd", g: "projE", credit: 4, status: "other" },
-    /* --- 低阶 1000/2000 --- */
+
+    /* ---- 工科选修 · 项目E 低阶（1000/2000级，需9学分） ---- */
     { id: "ISDN 2210", name: "Introduction to Brand Design",          cat: "isd", g: "projE", credit: 3, status: "other" },
     { id: "COMP 2012", name: "Object-Oriented Programming & Data Structures", cat: "isd", g: "projE", credit: 4, status: "other" },
-    { id: "COMP 2211", name: "Exploring Artificial Intelligence",     cat: "isd", g: "projE", credit: 3, status: "progress" },
+    { id: "COMP 2211", name: "Exploring Artificial Intelligence",     cat: "isd", g: "projE", credit: 3, status: "other" },
     { id: "COMP 2611", name: "Computer Organization",                 cat: "isd", g: "projE", credit: 4, status: "other" },
     { id: "ELEC 2100", name: "Signals and Systems",                   cat: "isd", g: "projE", credit: 4, status: "other" },
     { id: "ELEC 2350", name: "Introduction to Computer Organization & Design", cat: "isd", g: "projE", credit: 4, status: "other" },
@@ -278,66 +318,41 @@ const DATA = {
     { id: "MECH 2310", name: "Thermodynamics",                        cat: "isd", g: "projE", credit: 3, status: "other" },
     { id: "MECH 2410", name: "Engineering Materials I",               cat: "isd", g: "projE", credit: 3, status: "other" },
     { id: "MECH 2520", name: "Design and Manufacturing I",            cat: "isd", g: "projE", credit: 3, status: "other" },
-
-    /* ============ Common Core ============ */
-    { id: "ENGG 1300",  name: "Design Thinking for Health Innovation", cat: "cc", credit: 2, status: "done" },
-    { id: "HMAW 1905E", name: "Habits, Mindsets, and Behaviors",      cat: "cc", credit: 2, status: "done" },
-    { id: "HUMA 1221",  name: "Introduction to Game Studies",         cat: "cc", credit: 3, status: "done" },
-    { id: "HUMA 2240",  name: "Dreams of the Red Chamber",            cat: "cc", credit: 3, status: "done" },
-    { id: "LANG 1407",  name: "Academic English for Engineering Studies", cat: "cc", credit: 3, status: "done" },
-    { id: "LEGL 1000",  name: "Legal Education (0学分)",              cat: "cc", credit: 0, status: "done" },
-    { id: "SOSC 2740",  name: "Gender and Society",                   cat: "cc", credit: 3, status: "progress" },
-
-    /* ============ PBS Minor · 必修 ============ */
-    { id: "SOSC 1960", name: "Introduction to Psychology (三选一)",   cat: "pbs", g: "pbsReq", credit: 3, status: "planned" },
-    { id: "SOSC 1969", name: "Discovering Mind and Behavior (三选一)", cat: "pbs", g: "pbsReq", credit: 3, status: "other" },
-    { id: "SOSC 1980", name: "Psychology of Personal Growth (三选一)", cat: "pbs", g: "pbsReq", credit: 3, status: "other" },
-    { id: "SOSC 1990", name: "Research Methods in Psychological Science", cat: "pbs", g: "pbsReq", credit: 3, status: "other" },
-    /* ============ PBS Minor · List A (SOSC, ≥2门) ============ */
-    { id: "SOSC 2210", name: "Social Psychology",                     cat: "pbs", g: "pbsListA", credit: 3, status: "other" },
-    { id: "SOSC 2240", name: "Biological Psychology",                 cat: "pbs", g: "pbsListA", credit: 3, status: "other" },
-    { id: "SOSC 2250", name: "Cognitive Psychology",                  cat: "pbs", g: "pbsListA", credit: 3, status: "other" },
-    { id: "SOSC 2260", name: "Counselling Psychology",                cat: "pbs", g: "pbsListA", credit: 3, status: "other" },
-    { id: "SOSC 2800", name: "Cognitive Science",                     cat: "pbs", g: "pbsListA", credit: 3, status: "other" },
-    { id: "SOSC 2888", name: "Special Topics in Psychology",          cat: "pbs", g: "pbsListA", credit: 3, status: "other" },
-    { id: "SOSC 2980", name: "Personality Psychology",                cat: "pbs", g: "pbsListA", credit: 3, status: "other" },
-    { id: "SOSC 2990", name: "Developmental Psychology",              cat: "pbs", g: "pbsListA", credit: 3, status: "other" },
-    { id: "SOSC 3540", name: "Environmental Psychology",              cat: "pbs", g: "pbsListA", credit: 3, status: "other" },
-    { id: "SOSC 3888A", name: "Family Psychology",                    cat: "pbs", g: "pbsListA", credit: 3, status: "other" },
-    { id: "SOSC 3888B", name: "Neuropsychology",                      cat: "pbs", g: "pbsListA", credit: 3, status: "other" },
-    { id: "SOSC 3900", name: "Abnormal Psychology",                   cat: "pbs", g: "pbsListA", credit: 3, status: "other" },
-    { id: "SOSC 3990", name: "Health Psychology",                     cat: "pbs", g: "pbsListA", credit: 3, status: "other" },
-    /* ============ PBS Minor · List B (SBM, ≥1门) ============ */
-    { id: "MARK 1220", name: "Marketing and Society",                 cat: "pbs", g: "pbsListB", credit: 3, status: "other" },
-    { id: "MARK 1230", name: "Consumerism and Happiness",             cat: "pbs", g: "pbsListB", credit: 3, status: "other" },
-    { id: "MARK 1330", name: "Communications in the Digital Era",     cat: "pbs", g: "pbsListB", credit: 3, status: "other" },
-    { id: "MARK 3220", name: "Marketing Research",                    cat: "pbs", g: "pbsListB", credit: 3, status: "other" },
-    { id: "MARK 3410", name: "Promotion & Advertising Management",    cat: "pbs", g: "pbsListB", credit: 3, status: "other" },
-    { id: "MARK 3420", name: "Consumer Behavior",                     cat: "pbs", g: "pbsListB", credit: 3, status: "other" },
-    { id: "MGMT 1120", name: "Developing the Leader in You (1000级)", cat: "pbs", g: "pbsListB", credit: 3, status: "other" },
-    { id: "MGMT 1130", name: "Traps & Pitfalls in Judgement (1000级)", cat: "pbs", g: "pbsListB", credit: 3, status: "other" },
-    { id: "MGMT 2110", name: "Organizational Behavior",               cat: "pbs", g: "pbsListB", credit: 3, status: "other" },
-    { id: "MGMT 3110", name: "Human Resources Management",            cat: "pbs", g: "pbsListB", credit: 3, status: "other" },
-    { id: "MGMT 3120", name: "Managerial Leadership",                 cat: "pbs", g: "pbsListB", credit: 3, status: "other" },
-    { id: "MGMT 3130", name: "Judgement & Decision Making in Orgs",   cat: "pbs", g: "pbsListB", credit: 3, status: "other" },
-    { id: "MGMT 3140", name: "Negotiation",                           cat: "pbs", g: "pbsListB", credit: 3, status: "other" },
   ],
 };
 /* ===================== 数据区结束 ===================== */
 
-const STORE_KEY = "degree-tracker-v6";
+/* Common Core 领域（ISD 属 T，Broadening 须选非 T 领域，12学分=5选4） */
+const CC_AREAS = [
+  { id: "CTDL",   group: "Foundation",   label: "CTDL · Critical Thinking & Data Literacy", cr: 3 },
+  { id: "HMW",    group: "Foundation",   label: "HMW · Habits, Mindsets & Behaviors",       cr: 3 },
+  { id: "E-Comm", group: "Foundation",   label: "E-Comm · English Communication",           cr: 6 },
+  { id: "C-Comm", group: "Foundation",   label: "C-Comm · Chinese Communication",           cr: 3 },
+  { id: "UxOP",   group: "Experiencing", label: "UxOP · Experiential Opportunity",          cr: 3 },
+  { id: "BR-H",   group: "Broadening",   label: "H · Humanities",      cr: 3 },
+  { id: "BR-S",   group: "Broadening",   label: "S · Science",         cr: 3 },
+  { id: "BR-SA",  group: "Broadening",   label: "SA · Social Analysis",cr: 3 },
+  { id: "BR-ART", group: "Broadening",   label: "ART · Arts",          cr: 3 },
+  { id: "BR-SUS", group: "Broadening",   label: "SUS · Sustainability",cr: 3 },
+];
+const CC_GROUPS = [
+  { name: "Foundation（基础 · 15学分）", need: 15 },
+  { name: "Experiencing（体验 · 3学分）", need: 3 },
+  { name: "Broadening（拓宽 · 12学分，五领域选四）", need: 12 },
+];
+
+const STORE_KEY = "isd-tracker-generic-v1";
 const byId = Object.fromEntries(DATA.courses.map(c => [c.id, c]));
-let statuses = {}, bindings = {}, customIds = [], renames = {}, freeCredits = [], exData = { info: "", courses: [] };
+let statuses = {}, renames = {}, dates = { start: "", end: "" }, ccCourses = [], exData = { info: "", courses: [] }, extData = { type: "", name: "", courses: [] };
 try {
   const saved = JSON.parse(localStorage.getItem(STORE_KEY) || "{}");
   statuses = saved.statuses || {};
-  bindings = saved.bindings || {};
-  customIds = saved.customIds || [];
   renames = saved.renames || {};
-  freeCredits = saved.freeCredits || [];
+  dates = saved.dates || dates;
+  ccCourses = saved.ccCourses || [];
   exData = saved.ex || exData;
+  extData = saved.ext || extData;
 } catch (e) { /* ignore */ }
-/* 应用已保存的课号编辑（ELEC 3xxx/4xxx → 实际课号） */
 Object.entries(renames).forEach(([oldId, newId]) => {
   const c = byId[oldId];
   if (c && !byId[newId]) {
@@ -346,25 +361,8 @@ Object.entries(renames).forEach(([oldId, newId]) => {
     if (statuses[oldId]) { statuses[newId] = statuses[oldId]; delete statuses[oldId]; }
   }
 });
-/* 恢复自定义添加的 CC 课 */
-(customIds || []).forEach(id => {
-  if (byId[id]) return;
-  const c = { id, name: "自定义课程", cat: "cc", credit: 3, status: "other", custom: true };
-  DATA.courses.push(c); byId[id] = c;
-});
-DATA.courses.forEach(c => { if (!statuses[c.id]) statuses[c.id] = c.status; });
-
-function save() { localStorage.setItem(STORE_KEY, JSON.stringify({ statuses, bindings, customIds, renames, freeCredits, freeSeeded: true, ex: exData })); }
-/* 一次性迁移：SOSC 1440（转学分）从 Common Core 移入 Free Credits */
-try {
-  if (!JSON.parse(localStorage.getItem(STORE_KEY) || "{}").freeSeeded) {
-    if (!freeCredits.some(f => f.id === "SOSC 1440"))
-      freeCredits.push({ id: "SOSC 1440", credit: 3, done: true });
-    Object.keys(bindings).forEach(k => bindings[k] = (bindings[k] || []).filter(x => x !== "SOSC 1440"));
-    save();
-  }
-} catch (e) { /* ignore */ }
-const isBound = id => Object.values(bindings).some(arr => arr.includes(id));
+DATA.courses.forEach(c => { if (!statuses[c.id]) statuses[c.id] = "other"; });
+function save() { localStorage.setItem(STORE_KEY, JSON.stringify({ statuses, renames, dates, ccCourses, ex: exData, ext: extData })); }
 function levelOf(c) {
   const m = c.id.match(/(\d{4})/);
   if (m) return parseInt(m[1]);
@@ -372,252 +370,225 @@ function levelOf(c) {
   if (c.id.includes("4xxx")) return 4000;
   return 0;
 }
-/* 一门课可同时属于多个分组：主归属 (cat, g) + alt 附加归属，重叠时两个大类都显示 */
-function inGroup(c, cat, g) {
-  return [{ cat: c.cat, g: c.g }, ...(c.alt || [])]
-    .some(e => e.cat === cat && (g == null || e.g === g));
-}
-
-/* ---------- 模块A：时间 ---------- */
-function renderTime() {
-  const s = new Date(DATA.time.start), e = new Date(DATA.time.end), now = new Date();
-  const pct = Math.max(0, Math.min(100, (now - s) / (e - s) * 100));
-  document.getElementById("timePct").textContent = pct.toFixed(1) + "%";
-  document.getElementById("timeFill").style.width = pct + "%";
-  document.getElementById("timeNote").textContent =
-    `${DATA.time.start} 入学 → ${DATA.time.end} 毕业 · 剩余约 ${Math.max(0, Math.round((e - now) / 86400000))} 天`;
-}
-
-/* ---------- 模块A：课程进度（深色=已完成，浅色=进行中） ---------- */
-function renderProgress() {
-  let got = 0, lite = 0, total = 0;
-  const html = Object.entries(DATA.requirements).map(([k, req], i) => {
-    const list = DATA.courses.filter(c => c.cat === k);
-    const done = list.filter(c => statuses[c.id] === "done");
-    const inprog = list.filter(c => statuses[c.id] === "progress");
-    const doneCr = done.reduce((a, c) => a + c.credit, 0);
-    const progCr = inprog.reduce((a, c) => a + c.credit, 0);
-    const counted = Math.min(req.need, doneCr);
-    const liteCr = Math.min(req.need - counted, progCr);
-    got += counted; lite += liteCr; total += req.need;
-    const pct = req.need ? counted / req.need * 100 : 0;
-    const litePct = req.need ? liteCr / req.need * 100 : 0;
-    return `<div class="subcat">
-      <div class="bar-row">
-        <span class="bar-label">${req.name}　已完成 ${doneCr}（进行中 ${progCr}）/ 要求 ${req.need} ${req.unit}</span>
-        <span class="bar-label">${pct.toFixed(0)}%${litePct ? " +" + litePct.toFixed(0) + "%" : ""}</span>
-      </div>
-      <div class="track">
-        <div class="fill fill-${i+1}" style="width:${pct}%"></div>
-        <div class="fill fill-${i+1} lite" style="left:${pct}%;width:${litePct}%"></div>
-      </div>
-    </div>`;
-  }).join("");
-  document.getElementById("subcats").innerHTML = html;
-  const pct = total ? got / total * 100 : 0;
-  const litePct = total ? lite / total * 100 : 0;
-  document.getElementById("coursePct").textContent = pct.toFixed(1) + "%" + (lite ? " (+" + lite + "学分进行中)" : "");
-  document.getElementById("courseFill").style.width = pct + "%";
-  const lf = document.getElementById("courseFillLite");
-  lf.style.left = pct + "%"; lf.style.width = Math.min(litePct, 100 - pct) + "%";
-  document.getElementById("courseNote").textContent = "深色 = 已完成，浅色 = 进行中（不计入完成进度）；各类超出要求的部分不计入";
-}
-
-/* ---------- 模块B ---------- */
-const CATS = { isd: "ISD 专业课", cc: "Common Core", pbs: "PBS Minor" };
-const STS = { done: "已完成 ✅", progress: "进行中 🔄", planned: "计划选 ⭐", other: "可选" };
-
-function chipHTML(c, key) {
-  const editHint = c.editId ? " · 双击编辑课号" : "";
-  return `<span class="chip ${getStatus(key, c)}${c.custom ? " custom" : ""}" draggable="true" data-id="${key}"
-    data-editable="${c.editId ? 1 : ""}"
-    title="${c.name} · ${c.credit}学分${c.custom ? " · 右键单击删除" : editHint}">${c.id}</span>`;
-}
-
-function slotHTML(slot) {
-  const ids = bindings[slot.id] || [];
-  const chips = ids.filter(id => byId[id]).map(id => {
-    const c = byId[id];
-    return `<span class="chip ${statuses[id]}" draggable="true" data-id="${id}" data-from-slot="${slot.id}"
-      title="${c.name} · ${c.credit}学分 · 点击切换状态">${id} <span class="unbind">✕</span></span>`;
-  }).join("");
-  return `<div class="slot drop-target" data-slot="${slot.id}">
-    <span class="slot-label">${slot.label}</span>${chips}
-  </div>`;
-}
-
-function ccSlotBoard() {
-  const groups = [...new Set(DATA.ccSlots.map(s => s.group))];
-  const groupCr = { Foundation: 15, Experiencing: 3, Broadening: 12 };
-  return `<div class="slot-board">
-    ${groups.map(g => {
-      const slots = DATA.ccSlots.filter(s => s.group === g);
-      const doneCr = slots.reduce((a, s) => a + (bindings[s.id] || []).reduce((b, id) =>
-        b + (statuses[id] === "done" ? byId[id].credit : 0), 0), 0);
-      return `<div class="slot-group-title" style="color:#4f6ef7">${g}（已完成 ${doneCr} / ${groupCr[g]} 学分）</div>
-      <div class="slot-row">${slots.map(slotHTML).join("")}</div>`;
-    }).join("")}
-    <div class="slot-hint">
-      把下方课程方块拖到槽位 = 匹配该领域；从槽位拖回下方分区 = 解除匹配；点击槽内方块 = 切换状态；✕ 无拖拽解除提示用。
-      E-Comm 槽可放两门课（共6学分）。Broadening 须为非 T 领域（H / S / SA / ART）。
-    </div>
-    <div class="add-row">
-      <input id="ccAddInput" placeholder="输入课号，如 SOSC 0810" />
-      <button id="ccAddBtn">＋ 添加 Common Core 课</button>
-    </div>
-  </div>`;
-}
-
+function inGroup(c, g) { return c.g === g || (c.alt || []).some(a => a.g === g); }
 /* 重叠课程状态按大类独立：主归属用课号作键，附加归属用 "课号::组" 作键 */
 function ctxKey(c, g) { return g == null || c.g === g ? c.id : c.id + "::" + g; }
 function getStatus(key, c) { return statuses[key] !== undefined ? statuses[key] : c.status; }
 
-function zoneSetsFor(cat) {
-  if (cat === "isd") return [
-    { g: "engReq", title: "工科必修 · COMP / MATH / PHYS", need: 12, filter: c => inGroup(c, "isd", "engReq") },
-    { g: "langReq", title: "语言必修 · LANG", need: 3, filter: c => inGroup(c, "isd", "langReq"), simple: true },
-    { g: "isdReq", title: "ISDN 必修", need: 45, filter: c => inGroup(c, "isd", "isdReq"), hidePlanned: true },
-    { g: "bizE", title: "商学选修 · 创业E", need: 6, filter: c => inGroup(c, "isd", "bizE") },
-    { g: "projE", title: "工科选修 · 项目E ｜ 高阶课 (3000+，需12学分，两类合计21学分)", need: 12, filter: c => inGroup(c, "isd", "projE") && levelOf(c) >= 3000 },
-    { g: "projE", title: "工科选修 · 项目E ｜ 低阶课 (1000/2000级，需9学分，1000级最多计3学分)", need: 9, filter: c => inGroup(c, "isd", "projE") && levelOf(c) < 3000 },
-  ];
-  if (cat === "pbs") return [
-    { g: "pbsReq", title: "必修 · 入门课三选一 + 研究方法", need: 6, filter: c => inGroup(c, "pbs", "pbsReq") },
-    { g: "pbsListA", title: "List A · SOSC 选修（需6学分 = 2门）", need: 6, filter: c => inGroup(c, "pbs", "pbsListA") },
-    { g: "pbsListB", title: "List B · SBM 选修（需3学分 = 1门；两List合计1000级≤1门）", need: 3, filter: c => inGroup(c, "pbs", "pbsListB") },
-  ];
-  return [{ g: null, title: null, filter: c => inGroup(c, "cc", null) }];
+/* ---------- 模块A：时间（日期可自行设置） ---------- */
+function renderTime() {
+  const sp = document.getElementById("startDate"), ep = document.getElementById("endDate");
+  if (document.activeElement !== sp && sp.value !== (dates.start || "")) sp.value = dates.start || "";
+  if (document.activeElement !== ep && ep.value !== (dates.end || "")) ep.value = dates.end || "";
+  const note = document.getElementById("timeNote");
+  if (!dates.start || !dates.end) { note.textContent = "请先设置入学 / 毕业日期"; return; }
+  const s = new Date(dates.start), e = new Date(dates.end), now = new Date();
+  const pct = Math.max(0, Math.min(100, (now - s) / (e - s) * 100));
+  document.getElementById("timePct").textContent = pct.toFixed(1) + "%";
+  document.getElementById("timeFill").style.width = pct + "%";
+  note.textContent = `剩余约 ${Math.max(0, Math.round((e - now) / 86400000))} 天`;
+}
+document.getElementById("startDate").onchange = e => { dates.start = e.target.value; save(); renderTime(); };
+document.getElementById("endDate").onchange = e => { dates.end = e.target.value; save(); renderTime(); };
+
+/* ---------- 模块A：课程进度 ---------- */
+const subcatOpen = new Set(); // 各分组进度条默认折叠，点击标签行展开
+document.getElementById("subcats").addEventListener("click", e => {
+  const row = e.target.closest("[data-subcat]");
+  if (!row) return;
+  const key = row.dataset.subcat;
+  subcatOpen.has(key) ? subcatOpen.delete(key) : subcatOpen.add(key);
+  renderProgress();
+});
+function renderProgress() {
+  let got = 0, lite = 0, total = 0;
+  const need = DATA.total.need;
+  const doneCr = DATA.courses.filter(c => statuses[c.id] === "done").reduce((a, c) => a + c.credit, 0);
+  const progCr = DATA.courses.filter(c => statuses[c.id] === "progress").reduce((a, c) => a + c.credit, 0);
+  const counted = Math.min(need, doneCr);
+  const liteCr = Math.min(need - counted, progCr);
+  const pct = counted / need * 100, litePct = liteCr / need * 100;
+  document.getElementById("coursePct").textContent = pct.toFixed(1) + "%" + (liteCr ? " (+" + liteCr + "学分进行中)" : "");
+  document.getElementById("courseFill").style.width = pct + "%";
+  const lf = document.getElementById("courseFillLite");
+  lf.style.left = pct + "%"; lf.style.width = litePct + "%";
+  document.getElementById("courseNote").textContent = "深色 = 已完成，浅色 = 进行中（不计入完成进度）；超出 87 学分要求的部分不计入";
+
+  const colors = ["", "fill-1", "fill-2", "fill-3", "fill-4", "fill-5", "fill-6"];
+  document.getElementById("subcats").innerHTML = DATA.groups.map((gr, i) => {
+    // projE 拆高低两行
+    if (gr.g === "projE") return `
+      ${subBar("　├ 高阶课 (3000+)", 12, DATA.courses.filter(c => inGroup(c, "projE") && levelOf(c) >= 3000), "fill-5", "projE-hi")}
+      ${subBar("　└ 低阶课 (1000/2000级)", 9, DATA.courses.filter(c => inGroup(c, "projE") && levelOf(c) < 3000), "fill-6", "projE-lo")}`;
+    return subBar(gr.name, gr.need, DATA.courses.filter(c => inGroup(c, gr.g)), colors[i + 1], gr.g);
+  }).join("");
+
+  function subBar(label, needCr, list, color, key) {
+    const g = key.startsWith("projE") ? "projE" : key;
+    const done = list.filter(c => getStatus(ctxKey(c, g), c) === "done").reduce((a, c) => a + c.credit, 0);
+    const prog = list.filter(c => getStatus(ctxKey(c, g), c) === "progress").reduce((a, c) => a + c.credit, 0);
+    const counted = Math.min(needCr, done);
+    const liteCr = Math.min(needCr - counted, prog);
+    const p = counted / needCr * 100, lp = liteCr / needCr * 100;
+    const open = subcatOpen.has(key);
+    return `<div class="subcat">
+      <div class="bar-row" style="cursor:pointer" data-subcat="${key}">
+        <span class="bar-label">${open ? "▾" : "▸"} ${label}　已完成 ${done}（进行中 ${prog}）/ 要求 ${needCr} 学分</span>
+        <span class="bar-label">${p.toFixed(0)}%${lp ? " +" + lp.toFixed(0) + "%" : ""}</span>
+      </div>
+      <div class="track" style="${open ? "" : "display:none"}">
+        <div class="fill ${color}" style="width:${p}%"></div>
+        <div class="fill ${color} lite" style="left:${p}%;width:${lp}%"></div>
+      </div>
+    </div>`;
+  }
 }
 
-function zoneChips(zs, st) {
+/* ---------- 模块B ---------- */
+const STS = { done: "已完成 ✅", progress: "进行中 🔄", planned: "计划选 ⭐", other: "可选" };
+
+function chipHTML(c, key) {
+  const editHint = c.editId ? " · 双击编辑课号" : "";
+  return `<span class="chip ${getStatus(key, c)}" draggable="true" data-id="${key}"
+    data-editable="${c.editId ? 1 : ""}"
+    title="${c.name} · ${c.credit}学分${editHint}">${c.id}</span>`;
+}
+
+function zoneChips(g, st, lvl) {
   return DATA.courses.filter(c => {
-    if (!zs.filter(c) || isBound(c.id)) return false;
-    const s = getStatus(ctxKey(c, zs.g), c);
+    if (!inGroup(c, g) || isBusy(c.id)) return false;
+    if (g === "projE") {
+      if (lvl === "high" && levelOf(c) < 3000) return false;
+      if (lvl === "low" && levelOf(c) >= 3000) return false;
+    }
+    const s = getStatus(ctxKey(c, g), c);
     if (st === "done") return s === "done";
     if (st === "progress") return s === "progress";
     if (st === "planned") return s === "planned";
-    return s === "other" || s === "planned"; // "other" 栏同时收纳误设为 planned 的课
-  }).map(c => ({ c, key: ctxKey(c, zs.g) }));
+    return s === "other" || s === "planned";
+  }).map(c => ({ c, key: ctxKey(c, g) }));
 }
-const isBusy = () => false;
+const isBusy = () => false; // 通用版无槽位匹配
 const collapsedKeys = new Set();
-let ZS = {}; // 渲染时登记每个分区所属的大类 {key: {filter, need}}，供拖拽时校验
+let ZS = {}; // 分区 → 大类 {filter, need}，供拖拽校验
 
 function renderBoard() {
   ZS = {};
-  let html = "";
-  for (const [cat, catName] of Object.entries(CATS)) {
-    const slotBoard = cat === "cc" ? ccSlotBoard() : "";
-    const zonesHtml = zoneSetsFor(cat).map((zs, zi) => {
-      ZS[cat + ":" + zi] = zs;
-      const zoneDefs = zs.simple
-        ? [["done", "已完成 ✅"], ["other", "未完成 ⬜"]]
-        : zs.hidePlanned
-          ? [["done", "已完成 ✅"], ["progress", "进行中 🔄"], ["other", "其他"]]
-          : Object.entries(STS);
-      const groupList = DATA.courses.filter(zs.filter);
-      const doneCr = groupList.filter(c => getStatus(ctxKey(c, zs.g), c) === "done").reduce((a, c) => a + c.credit, 0);
-      const denom = zs.need || groupList.reduce((a, c) => a + c.credit, 0);
-      const complete = doneCr >= denom;
-      const cKey = cat + "::" + (zs.title || "all");
-      const collapseId = "collapse-" + cat + "-" + (zs.title || "all").replace(/\W/g, "");
-      const zones = zoneDefs.map(([st, label]) => {
-        const list = zoneChips(zs, st);
-        const isCollapsible = complete && list.length > 0 && st !== "done";
-        const collapsed = isCollapsible && collapsedKeys.has(cKey);
+  DATA.groups.forEach(gr => {
+    if (gr.g === "projE") {
+      ZS["projE-hi"] = { g: "projE", need: 12, filter: c => inGroup(c, "projE") && levelOf(c) >= 3000 };
+      ZS["projE-lo"] = { g: "projE", need: 9, filter: c => inGroup(c, "projE") && levelOf(c) < 3000 };
+    } else {
+      ZS[gr.g] = { g: gr.g, need: gr.need, filter: c => inGroup(c, gr.g) };
+    }
+  });
+  const zonesHtml = DATA.groups.map(gr => {
+    const zoneDefs = gr.simple
+      ? [["done", "已完成 ✅"], ["other", "未完成 ⬜"]]
+      : gr.hidePlanned
+        ? [["done", "已完成 ✅"], ["progress", "进行中 🔄"], ["other", "可选"]]
+        : Object.entries(STS);
+    const lvl = null;
+    const groupList = DATA.courses.filter(c => inGroup(c, gr.g));
+    const doneCr = groupList.filter(c => getStatus(ctxKey(c, gr.g), c) === "done").reduce((a, c) => a + c.credit, 0);
+    const complete = doneCr >= gr.need;
+    const cKey = gr.g;
+    const collapseId = "collapse-" + gr.g;
+    const zones = zoneDefs.map(([st, label]) => {
+      const list = zoneChips(gr.g, st, lvl);
+      const isCollapsible = complete && list.length > 0 && st !== "done";
+      const collapsed = isCollapsible && collapsedKeys.has(cKey);
+      return `<div>
+        <div class="zone-title">${label} <span class="count">（${list.length}）</span>${
+          isCollapsible ? ` <a href="javascript:void(0)" data-collapse="${cKey}"
+            style="font-size:11px;color:var(--accent);font-weight:400">${collapsed ? "▸ 展开" : "▾ 收起"}</a>` : ""
+        }</div>
+        <div class="drop-zone" data-status="${st}" data-zs="${cKey}" id="${collapseId}" style="${collapsed ? "display:none" : ""}">
+          ${collapsed ? "" : (list.map(x => chipHTML(x.c, x.key)).join("") || `<span class="empty-hint">拖动课号到这里</span>`)}
+        </div>
+      </div>`;
+    }).join("");
+    const progLabel = ` <span style="font-weight:700">（已完成 ${Math.min(doneCr, gr.need)} / ${gr.need} 学分）${complete ? " ✅" : ""}</span>`;
+    let html = `<div class="slot-group-title" style="color:#4f6ef7;margin-top:14px">${gr.name}${progLabel}</div>
+      <div class="zone-grid">${zones}</div>`;
+    if (gr.g === "projE") {
+      const hi = DATA.courses.filter(c => inGroup(c, "projE") && levelOf(c) >= 3000);
+      const lo = DATA.courses.filter(c => inGroup(c, "projE") && levelOf(c) < 3000);
+      const hiDone = hi.filter(c => getStatus(ctxKey(c, "projE"), c) === "done").reduce((a, c) => a + c.credit, 0);
+      const loDone = lo.filter(c => getStatus(ctxKey(c, "projE"), c) === "done").reduce((a, c) => a + c.credit, 0);
+      html = `<div class="slot-group-title" style="color:#4f6ef7;margin-top:14px">${gr.name}${progLabel}</div>
+        <div class="zone-grid">${subZones("高阶课 (3000+，需12学分)", "high", hiDone, 12, cKey + "-hi", complete)}</div>
+        <div class="zone-grid">${subZones("低阶课 (1000/2000级，需9学分)", "low", loDone, 9, cKey + "-lo", complete)}</div>`;
+    }
+    return html;
+
+    function subZones(title, level, doneCr, needCr, key, grpComplete) {
+      const defs = [["done", "已完成 ✅"], ["progress", "进行中 🔄"], ["planned", "计划选 ⭐"], ["other", "可选"]];
+      const zs = defs.map(([st, label]) => {
+        const list = zoneChips("projE", st, level);
+        const coll = grpComplete && list.length > 0 && st !== "done" && collapsedKeys.has(key);
         return `<div>
           <div class="zone-title">${label} <span class="count">（${list.length}）</span>${
-            isCollapsible ? ` <a href="javascript:void(0)" data-collapse="${cKey}" data-target="${collapseId}"
-              style="font-size:11px;color:var(--accent);font-weight:400">${collapsed ? "▸ 展开" : "▾ 收起"}</a>` : ""
+            grpComplete && list.length > 0 && st !== "done" ? ` <a href="javascript:void(0)" data-collapse="${key}"
+              style="font-size:11px;color:var(--accent);font-weight:400">${coll ? "▸ 展开" : "▾ 收起"}</a>` : ""
           }</div>
-          <div class="drop-zone" data-cat="${cat}" data-status="${st}" data-zs="${cat}:${zi}" id="${collapseId}"
-            style="${collapsed ? "display:none" : ""}">
-            ${collapsed ? "" : (list.map(x => chipHTML(x.c, x.key)).join("") || `<span class="empty-hint">拖动课号到这里</span>`)}
+          <div class="drop-zone" data-status="${st}" data-zs="${key}" id="${key}" style="${coll ? "display:none" : ""}">
+            ${coll ? "" : (list.map(x => chipHTML(x.c, x.key)).join("") || `<span class="empty-hint">拖动课号到这里</span>`)}
           </div>
         </div>`;
       }).join("");
-      let progLabel = "";
-      if (zs.title) progLabel = ` <span style="font-weight:700">（已完成 ${Math.min(doneCr, denom)} / ${denom} 学分）${complete ? " ✅" : ""}</span>`;
-      return (zs.title ? `<div class="slot-group-title" style="color:#4f6ef7;margin-top:14px">${zs.title}${progLabel}</div>` : "") +
-             `<div class="zone-grid">${zones}</div>`;
-    }).join("");
-    html += `<div class="course-card">
-      <h2>${catName} <span style="font-weight:400;font-size:13px;color:var(--muted)">要求 ${DATA.requirements[cat].need} ${DATA.requirements[cat].unit}</span></h2>
-      ${slotBoard}
-      ${zonesHtml}
-    </div>`;
-  }
-  html += `<div class="course-card" id="freeCard">
-    <h2>Free Credits <span style="font-weight:400;font-size:13px;color:var(--muted)">要求 3 学分 · 已计入 <b id="freeDone">0</b> / 3 学分</span></h2>
-    <div class="desc">输入课号和学分添加（如转学分、超修课等）；点击方块 = 标记已完成；右键单击 = 删除</div>
-    <div class="drop-zone" id="freeZone" style="min-height:52px"></div>
-    <div class="add-row">
-      <input id="freeIdInput" placeholder="课号，如 MATH 1014" style="width:180px" />
-      <input id="freeCrInput" placeholder="学分" type="number" min="0" step="1" style="width:70px" />
-      <button id="freeAddBtn">＋ 添加</button>
-    </div>
-  </div>`;
-  html += `<div class="tools"><button class="reset" id="resetBtn">重置全部分类与匹配</button></div>`;
-  const mb = document.getElementById("moduleB");
-  mb.innerHTML = html;
-  document.getElementById("resetBtn").onclick = () => {
-    if (confirm("重置所有状态、槽位匹配和自定义课程？")) {
-      localStorage.removeItem(STORE_KEY);
-      location.reload();
+      const doneLbl = Math.min(doneCr, needCr);
+      return `<div class="slot-group-title" style="color:#4f6ef7;margin-top:10px">${title} <span style="font-weight:700">（已完成 ${doneLbl} / ${needCr} 学分）${doneCr >= needCr ? " ✅" : ""}</span></div>` + zs;
     }
+  }).join("");
+
+  document.getElementById("moduleB").innerHTML = `
+    <div class="course-card">
+      <h2>ISD 专业课 <span style="font-weight:400;font-size:13px;color:var(--muted)">要求 ${DATA.total.need} ${DATA.total.unit}</span></h2>
+      ${zonesHtml}
+    </div>
+    <div class="course-card">
+      <h2>Common Core <span style="font-weight:400;font-size:13px;color:var(--muted)">要求 30 学分 · 已计入 <b id="ccTotalDone" style="color:var(--accent)">0</b> / 30</span></h2>
+      ${renderCC()}
+      <div class="cc-hint">
+        在各领域框内输入课号添加（可在课号后加学分，如 "LANG 1407 3"，默认3学分）；单击课号方块 = 标记已完成；右键单击 = 删除。
+        ISD 属 Technology 分类，Broadening 须选非 T 领域：H / S / SA / ART / SUS 五选四。
+      </div>
+      <div class="tools"><button class="reset" id="resetBtn">重置全部分类</button></div>
+    </div>`;
+  document.getElementById("resetBtn").onclick = () => {
+    if (confirm("重置所有状态、Common Core 记录和课号编辑？")) { localStorage.removeItem(STORE_KEY); location.reload(); }
   };
-  const btn = document.getElementById("ccAddBtn");
-  if (btn) btn.onclick = () => {
-    const inp = document.getElementById("ccAddInput");
-    const id = inp.value.trim().toUpperCase();
-    if (!id) return;
-    if (byId[id]) { alert("该课号已存在"); return; }
-    const c = { id, name: "自定义课程", cat: "cc", credit: 3, status: "other", custom: true };
-    DATA.courses.push(c); byId[id] = c; customIds.push(id);
-    statuses[id] = "other"; // 关键：新课程也要登记状态，否则方块无法渲染
-    save(); renderAll();
-  };
-  renderFree();
 }
 
-/* ---------- Free Credits ---------- */
-function renderFree() {
-  const zone = document.getElementById("freeZone");
-  if (!zone) return;
-  zone.innerHTML = freeCredits.map((f, i) =>
-    `<span class="chip ${f.done ? "done" : "other"}" data-free="${i}" draggable="false"
-      title="点击标记已完成 · 右键单击删除">${f.id} · ${f.credit}学分</span>`
-  ).join("") || `<span class="empty-hint">上方输入课号与学分后添加</span>`;
-  const doneCr = freeCredits.filter(f => f.done).reduce((a, f) => a + f.credit, 0);
-  document.getElementById("freeDone").textContent = Math.min(doneCr, 3);
-  document.getElementById("freeDone").style.color = doneCr >= 3 ? "#34a374" : "";
+/* ---------- Common Core（全部由用户输入） ---------- */
+function ccGroupDone(groupName) {
+  return ccCourses.filter(f => f.group === groupName && f.done).reduce((a, f) => a + f.credit, 0);
 }
-
-function wireFree() {
-  const mb = document.getElementById("moduleB");
-  mb.addEventListener("click", e => {
-    const chip = e.target.closest("[data-free]");
-    if (!chip) return;
-    const f = freeCredits[+chip.dataset.free];
-    if (f) { f.done = !f.done; save(); renderFree(); }
-  });
-  mb.addEventListener("contextmenu", e => {
-    const chip = e.target.closest("[data-free]");
-    if (!chip) return;
-    e.preventDefault();
-    freeCredits.splice(+chip.dataset.free, 1);
-    save(); renderFree();
-  });
-  document.getElementById("freeAddBtn").onclick = () => {
-    const id = document.getElementById("freeIdInput").value.trim().toUpperCase();
-    const cr = parseFloat(document.getElementById("freeCrInput").value);
-    if (!id) return;
-    if (freeCredits.some(f => f.id === id)) { alert("该课号已添加"); return; }
-    freeCredits.push({ id, credit: isNaN(cr) ? 3 : cr, done: false });
-    save(); renderFree();
-    document.getElementById("freeIdInput").value = "";
-    document.getElementById("freeCrInput").value = "";
-  };
+function renderCC() {
+  const total = ccGroupDone("Foundation") + ccGroupDone("Experiencing") + Math.min(12, ccGroupDone("Broadening"));
+  setTimeout(() => { const el = document.getElementById("ccTotalDone"); if (el) { el.textContent = Math.min(30, total); el.style.color = total >= 30 ? "#34a374" : "var(--accent)"; } }, 0);
+  return CC_GROUPS.map(g => {
+    const done = ccGroupDone(g.name.startsWith("Foundation") ? "Foundation" : g.name.startsWith("Experiencing") ? "Experiencing" : "Broadening");
+    const shown = Math.min(done, g.need);
+    return `<div class="slot-group-title" style="color:#4f6ef7;margin-top:14px">${g.name}
+        <span style="font-weight:700">（已完成 ${shown} / ${g.need} 学分）${done >= g.need ? " ✅" : ""}</span></div>
+      <div class="cc-area-row">${CC_AREAS.filter(a => a.group ===
+        (g.name.startsWith("Foundation") ? "Foundation" : g.name.startsWith("Experiencing") ? "Experiencing" : "Broadening")
+      ).map(a => {
+        const items = ccCourses.map((f, i) => ({ f, i })).filter(x => x.f.area === a.id);
+        return `<div class="cc-area">
+          <span class="area-label">${a.label} <span class="cr">· ${a.cr}学分</span></span>
+          <div class="area-chips">${items.map(x =>
+            `<span class="chip ${x.f.done ? "done" : "other"}" data-cc="${x.i}" title="单击标记已完成 · 右键单击删除">${x.f.id} · ${x.f.credit}学分</span>`
+          ).join("") || `<span class="empty-hint">下方输入课号</span>`}</div>
+          <div class="cc-add">
+            <input id="cc-in-${a.id}" placeholder="课号 [学分]" />
+            <button data-cc-add="${a.id}">＋</button>
+          </div>
+        </div>`;
+      }).join("")}</div>`;
+  }).join("");
 }
 
 /* ---------- 拖拽 ---------- */
@@ -625,25 +596,24 @@ let drag = null;
 document.addEventListener("dragstart", e => {
   const chip = e.target.closest(".chip");
   if (!chip) return;
-  drag = { id: chip.dataset.id, fromSlot: chip.dataset.fromSlot || null };
+  drag = { id: chip.dataset.id };
   chip.classList.add("dragging");
   e.dataTransfer.effectAllowed = "move";
 });
-document.addEventListener("dragend", e => {
+document.addEventListener("dragend", () => {
   document.querySelectorAll(".chip.dragging").forEach(c => c.classList.remove("dragging"));
   drag = null;
 });
-
 document.getElementById("moduleB").addEventListener("dragover", e => {
-  const t = e.target.closest(".drop-zone, .slot.drop-target");
+  const t = e.target.closest(".drop-zone");
   if (!t) return;
   e.preventDefault();
   t.classList.add("drag-over");
 });
 document.getElementById("moduleB").addEventListener("dragleave", e => {
-  e.target.closest(".drop-zone, .slot.drop-target")?.classList.remove("drag-over");
+  e.target.closest(".drop-zone")?.classList.remove("drag-over");
 });
-/* 大类是否已修满：该组已完成学分 ≥ 要求学分 */
+/* 大类是否已修满 */
 function groupFull(key) {
   const zs = ZS[key];
   if (!zs || !zs.need) return false;
@@ -654,64 +624,18 @@ function groupFull(key) {
 
 document.getElementById("moduleB").addEventListener("drop", e => {
   const zone = e.target.closest(".drop-zone");
-  const slot = e.target.closest(".slot.drop-target");
-  if (!drag) return;
-  const { id, fromSlot } = drag;
-  if (zone) {
-    const st = zone.dataset.status;
-    if (st === "planned" && groupFull(zone.dataset.zs)) {
-      alert("该大类学分已修满，不能再计划更多课程");
-      return;
-    }
-    // 放到状态分区：解除槽位匹配并设置状态
-    if (fromSlot) { bindings[fromSlot] = (bindings[fromSlot] || []).filter(x => x !== id); }
-    Object.keys(bindings).forEach(k => bindings[k] = (bindings[k] || []).filter(x => x !== id));
-    statuses[id] = zone.dataset.status;
-    save(); renderAll();
-  } else if (slot && byId[id]?.cat === "cc") {
-    // 放到 CC 槽位：匹配（一个槽可容纳多门课，如 E-Comm 两门）
-    const key = slot.dataset.slot;
-    Object.keys(bindings).forEach(k => bindings[k] = (bindings[k] || []).filter(x => x !== id));
-    if (fromSlot) bindings[fromSlot] = (bindings[fromSlot] || []).filter(x => x !== id);
-    (bindings[key] = bindings[key] || []).push(id);
-    save(); renderAll();
-  }
-});
-/* 点击「收起/展开」：折叠或展开已完成大类的「其他」栏 */
-document.getElementById("moduleB").addEventListener("click", e => {
-  const toggle = e.target.closest("a[data-collapse]");
-  if (toggle) {
-    const key = toggle.dataset.collapse;
-    collapsedKeys.has(key) ? collapsedKeys.delete(key) : collapsedKeys.add(key);
-    renderBoard();
+  if (!zone || !drag) return;
+  if (zone.dataset.status === "planned" && groupFull(zone.dataset.zs)) {
+    alert("该大类学分已修满，不能再计划更多课程");
     return;
   }
-  const chip = e.target.closest(".chip[data-from-slot]");
-  if (!chip) return;
-  const order = ["done", "progress", "planned", "other"];
-  const cur = statuses[chip.dataset.id];
-  statuses[chip.dataset.id] = order[(order.indexOf(cur) + 1) % order.length];
+  statuses[drag.id] = zone.dataset.status;
   save(); renderAll();
 });
 document.getElementById("moduleB").addEventListener("dblclick", e => {
   const chip = e.target.closest(".chip");
-  if (!chip) return;
+  if (!chip || !chip.dataset.editable) return;
   const id = chip.dataset.id;
-  /* 双击 ELEC 3xxx/4xxx：编辑课号 */
-  if (chip.dataset.editable) {
-    const newId = (prompt(`将 ${id} 替换为实际课号：`, id) || "").trim().toUpperCase();
-    if (!newId || newId === id) return;
-    if (byId[newId]) { alert("该课号已存在"); return; }
-    const c = byId[id];
-    renames[id] = newId;
-    c.id = newId; c.editId = true; c.name = c.name.replace(/（双击编辑课号）/, "");
-    byId[newId] = c; delete byId[id];
-    if (statuses[id]) { statuses[newId] = statuses[id]; delete statuses[id]; }
-    save(); renderAll();
-    return;
-  }
-  /* 双击 ELEC 3xxx/4xxx：编辑课号（编辑保留双击，删除统一用右键） */
-  if (!chip.dataset.editable) return;
   const newId = (prompt(`将 ${id} 替换为实际课号：`, id) || "").trim().toUpperCase();
   if (!newId || newId === id) return;
   if (byId[newId]) { alert("该课号已存在"); return; }
@@ -722,26 +646,56 @@ document.getElementById("moduleB").addEventListener("dblclick", e => {
   if (statuses[id]) { statuses[newId] = statuses[id]; delete statuses[id]; }
   save(); renderAll();
 });
-/* 右键单击自定义课：删除 */
-document.getElementById("moduleB").addEventListener("contextmenu", e => {
-  const chip = e.target.closest(".chip.custom");
-  if (!chip) return;
-  e.preventDefault();
-  const id = chip.dataset.id;
-  if (!confirm(`删除自定义课程 ${id}？`)) return;
-  Object.keys(bindings).forEach(k => bindings[k] = (bindings[k] || []).filter(x => x !== id));
-  delete statuses[id]; delete byId[id];
-  customIds = customIds.filter(x => x !== id);
-  DATA.courses = DATA.courses.filter(c => c.id !== id);
-  save(); renderAll();
+document.getElementById("moduleB").addEventListener("click", e => {
+  const toggle = e.target.closest("a[data-collapse]");
+  if (!toggle) return;
+  const key = toggle.dataset.collapse;
+  collapsedKeys.has(key) ? collapsedKeys.delete(key) : collapsedKeys.add(key);
+  renderBoard();
 });
 
+/* ---------- Common Core 交互 ---------- */
+function parseCCInput(raw) {
+  const m = raw.trim().match(/^(.+?)\s+(\d+(?:\.\d+)?)$/);
+  if (m) return { id: m[1].trim().toUpperCase(), credit: parseFloat(m[2]) };
+  return { id: raw.trim().toUpperCase(), credit: 3 };
+}
+function wireCC() {
+  const mb = document.getElementById("moduleB");
+  /* 添加（按钮或输入框回车） */
+  const addCourse = areaId => {
+    const inp = document.getElementById("cc-in-" + areaId);
+    if (!inp) return;
+    const { id, credit } = parseCCInput(inp.value);
+    if (!id) return;
+    if (ccCourses.some(f => f.area === areaId && f.id === id)) { alert("该课号已在此领域添加"); return; }
+    ccCourses.push({ area: areaId, id, credit, done: false });
+    save(); renderAll();
+  };
+  mb.addEventListener("click", e => {
+    const addBtn = e.target.closest("[data-cc-add]");
+    if (addBtn) { addCourse(addBtn.dataset.ccAdd); return; }
+    const chip = e.target.closest("[data-cc]");
+    if (chip) {
+      const f = ccCourses[+chip.dataset.cc];
+      if (f) { f.done = !f.done; save(); renderAll(); }
+    }
+  });
+  mb.addEventListener("contextmenu", e => {
+    const chip = e.target.closest("[data-cc]");
+    if (!chip) return;
+    e.preventDefault();
+    ccCourses.splice(+chip.dataset.cc, 1);
+    save(); renderAll();
+  });
+  mb.addEventListener("keydown", e => {
+    if (e.key !== "Enter") return;
+    const inp = e.target.closest("input[id^='cc-in-']");
+    if (inp) addCourse(inp.id.replace("cc-in-", ""));
+  });
+}
+
 function renderAll() { renderProgress(); renderBoard(); }
-renderTime();
-renderAll();
-wireFree();
-wireExchange();
-setInterval(renderTime, 60000);
 
 /* ---------- 暑校/寒校计划 ---------- */
 let exDrag = null;
@@ -803,6 +757,120 @@ function wireExchange() {
     save(); renderExchange();
   });
 }
+
+/* ---------- 延伸项目 ---------- */
+const EXT_STS = [["done", "已完成 ✅"], ["progress", "进行中 🔄"], ["planned", "计划选 ⭐"], ["other", "可选"]];
+let extDrag = null;
+
+function parseExtLine(line) {
+  let s = line.trim().replace(/\s+/g, " ");
+  if (!s) return null;
+  let credit = 3;
+  const crM = s.match(/\s(\d+(?:\.\d+)?)$/);
+  if (crM && parseFloat(crM[1]) <= 12) { credit = parseFloat(crM[1]); s = s.slice(0, crM.index); }
+  const codeM = s.match(/^([A-Za-z]{2,6}\s?\d{3,4}\w*)\s*(.*)$/);
+  if (!codeM) return null;
+  const id = codeM[1].replace(/\s+/, " ").toUpperCase();
+  const name = codeM[2].trim();
+  const isEle = /electiv|选\s*修/i.test(s);
+  return { id, name, credit, group: isEle ? "ele" : "req", st: "other" };
+}
+
+function renderExtension() {
+  const typeSel = document.getElementById("extType");
+  const nameInp = document.getElementById("extName");
+  if (document.activeElement !== typeSel && typeSel.value !== extData.type) typeSel.value = extData.type;
+  if (document.activeElement !== nameInp && nameInp.value !== extData.name) nameInp.value = extData.name;
+  document.getElementById("extBadge").innerHTML =
+    extData.type ? `<span class="ext-type-badge">${extData.type}${extData.name ? " · " + extData.name : ""}</span>` : "";
+
+  const zonesFor = group => {
+    const list = extData.courses.map((c, i) => ({ c, i })).filter(x => x.c.group === group);
+    return `<div class="zone-grid" style="margin-top:8px">${EXT_STS.map(([st, label]) => {
+      const items = list.filter(x => (x.c.st || "other") === st);
+      return `<div>
+        <div class="zone-title" style="font-size:12px">${label} <span class="count">（${items.length}）</span></div>
+        <div class="drop-zone" data-ext-group="${group}" data-ext-st="${st}" style="min-height:44px">
+          ${items.map(x => `<span class="chip ${x.c.st === "done" ? "done" : x.c.st === "progress" ? "progress" : x.c.st === "planned" ? "planned" : "other"}"
+            draggable="true" data-ext="${x.i}" title="${x.c.name || ""} · ${x.c.credit}学分 · 单击标记已完成 · 右键删除">${x.c.id}</span>`).join("")
+            || `<span class="empty-hint">拖动课号到这里</span>`}
+        </div>
+      </div>`;
+    }).join("")}</div>`;
+  };
+  const reqList = extData.courses.filter(c => c.group === "req");
+  const eleList = extData.courses.filter(c => c.group === "ele");
+  document.getElementById("extReqZones").innerHTML = zonesFor("req");
+  document.getElementById("extEleZones").innerHTML = zonesFor("ele");
+  document.getElementById("extReqCnt").textContent = `（${reqList.length}）`;
+  document.getElementById("extEleCnt").textContent = `（${eleList.length}）`;
+}
+
+function wireExtension() {
+  const card = document.getElementById("extCard");
+  renderExtension();
+  document.getElementById("extType").onchange = e => { extData.type = e.target.value; save(); renderExtension(); };
+  document.getElementById("extName").onchange = e => { extData.name = e.target.value; save(); renderExtension(); };
+  document.getElementById("extGenBtn").onclick = () => {
+    const lines = document.getElementById("extPaste").value.split("\n");
+    const parsed = lines.map(parseExtLine).filter(Boolean);
+    if (!parsed.length) { alert("未能识别任何课程，请检查格式（每行：课号 课程名 学分）"); return; }
+    extData.courses = parsed;
+    save(); renderExtension();
+  };
+  /* 课号方块拖拽（跨组/跨状态） */
+  card.addEventListener("dragstart", e => {
+    const chipEl = e.target.closest("[data-ext]");
+    if (!chipEl) return;
+    extDrag = +chipEl.dataset.ext;
+    chipEl.classList.add("dragging");
+    e.dataTransfer.effectAllowed = "move";
+  });
+  card.addEventListener("dragend", () => {
+    document.querySelectorAll(".chip.dragging").forEach(c => c.classList.remove("dragging"));
+    extDrag = null;
+  });
+  card.addEventListener("dragover", e => {
+    const z = e.target.closest("[data-ext-group]");
+    if (!z) return;
+    e.preventDefault();
+    z.classList.add("drag-over");
+  });
+  card.addEventListener("dragleave", e => e.target.closest("[data-ext-group]")?.classList.remove("drag-over"));
+  card.addEventListener("drop", e => {
+    const z = e.target.closest("[data-ext-group]");
+    if (!z || extDrag == null) return;
+    e.preventDefault();
+    z.classList.remove("drag-over");
+    extData.courses[extDrag].group = z.dataset.extGroup;
+    extData.courses[extDrag].st = z.dataset.extSt;
+    save(); renderExtension();
+  });
+  /* 单击：切换已完成；右键：删除 */
+  card.addEventListener("click", e => {
+    const chipEl = e.target.closest("[data-ext]");
+    if (!chipEl) return;
+    const c = extData.courses[+chipEl.dataset.ext];
+    if (!c) return;
+    c.st = (c.st || "other") === "done" ? "other" : "done";
+    save(); renderExtension();
+  });
+  card.addEventListener("contextmenu", e => {
+    const chipEl = e.target.closest("[data-ext]");
+    if (!chipEl) return;
+    e.preventDefault();
+    extData.courses.splice(+chipEl.dataset.ext, 1);
+    save(); renderExtension();
+  });
+}
+
+/* 初始化（放在所有声明之后，避免 const/let 暂时性死区报错） */
+renderTime();
+renderAll();
+wireCC();
+wireExchange();
+wireExtension();
+setInterval(renderTime, 1000);
 </script>
 </body>
 </html>
