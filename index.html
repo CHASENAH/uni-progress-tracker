@@ -111,6 +111,29 @@
 
   <!-- 模块B -->
   <div class="moduleB" id="moduleB"></div>
+
+  <!-- 暑校/寒校计划 -->
+  <div class="course-card" id="exchangeCard" style="margin-top:18px">
+    <h2>暑校 / 寒校计划</h2>
+    <div class="desc">填写目标学校信息；添加对应 UST 课程的课号，方块可在「计划 ⭐」和「已读 ✅」两栏间自由拖拽，右键单击删除</div>
+    <div class="add-row" style="margin-top:0">
+      <input id="exInfo" placeholder="目标学校信息（如 Yonsei University · 2027 暑期）" style="width:auto;flex:1">
+    </div>
+    <div class="zone-grid" style="margin-top:12px">
+      <div>
+        <div class="zone-title">计划 ⭐ <span class="count" id="exPlanCnt"></span></div>
+        <div class="drop-zone" id="exPlanZone"></div>
+      </div>
+      <div>
+        <div class="zone-title">已读 ✅ <span class="count" id="exDoneCnt"></span></div>
+        <div class="drop-zone" id="exDoneZone"></div>
+      </div>
+    </div>
+    <div class="add-row">
+      <input id="exIdInput" placeholder="UST 对应课号，如 MATH 1014" style="width:180px">
+      <button id="exAddBtn">＋ 添加课号</button>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -304,7 +327,7 @@ const DATA = {
 
 const STORE_KEY = "degree-tracker-v6";
 const byId = Object.fromEntries(DATA.courses.map(c => [c.id, c]));
-let statuses = {}, bindings = {}, customIds = [], renames = {}, freeCredits = [];
+let statuses = {}, bindings = {}, customIds = [], renames = {}, freeCredits = [], exData = { info: "", courses: [] };
 try {
   const saved = JSON.parse(localStorage.getItem(STORE_KEY) || "{}");
   statuses = saved.statuses || {};
@@ -312,6 +335,7 @@ try {
   customIds = saved.customIds || [];
   renames = saved.renames || {};
   freeCredits = saved.freeCredits || [];
+  exData = saved.ex || exData;
 } catch (e) { /* ignore */ }
 /* 应用已保存的课号编辑（ELEC 3xxx/4xxx → 实际课号） */
 Object.entries(renames).forEach(([oldId, newId]) => {
@@ -330,7 +354,7 @@ Object.entries(renames).forEach(([oldId, newId]) => {
 });
 DATA.courses.forEach(c => { if (!statuses[c.id]) statuses[c.id] = c.status; });
 
-function save() { localStorage.setItem(STORE_KEY, JSON.stringify({ statuses, bindings, customIds, renames, freeCredits, freeSeeded: true })); }
+function save() { localStorage.setItem(STORE_KEY, JSON.stringify({ statuses, bindings, customIds, renames, freeCredits, freeSeeded: true, ex: exData })); }
 /* 一次性迁移：SOSC 1440（转学分）从 Common Core 移入 Free Credits */
 try {
   if (!JSON.parse(localStorage.getItem(STORE_KEY) || "{}").freeSeeded) {
@@ -716,7 +740,69 @@ function renderAll() { renderProgress(); renderBoard(); }
 renderTime();
 renderAll();
 wireFree();
+wireExchange();
 setInterval(renderTime, 60000);
+
+/* ---------- 暑校/寒校计划 ---------- */
+let exDrag = null;
+function renderExchange() {
+  const chip = (c, i) => `<span class="chip ${c.st === "done" ? "done" : "planned"}" draggable="true" data-ex="${i}"
+    title="右键单击删除">${c.id}</span>`;
+  const plan = exData.courses.map((c, i) => ({ c, i })).filter(x => x.c.st === "planned");
+  const done = exData.courses.map((c, i) => ({ c, i })).filter(x => x.c.st === "done");
+  document.getElementById("exPlanZone").innerHTML = plan.map(x => chip(x.c, x.i)).join("") || `<span class="empty-hint">输入课号后添加</span>`;
+  document.getElementById("exDoneZone").innerHTML = done.map(x => chip(x.c, x.i)).join("") || `<span class="empty-hint">拖动课号到这里</span>`;
+  document.getElementById("exPlanCnt").textContent = `（${plan.length}）`;
+  document.getElementById("exDoneCnt").textContent = `（${done.length}）`;
+  const info = document.getElementById("exInfo");
+  if (document.activeElement !== info && info.value !== exData.info) info.value = exData.info;
+}
+function wireExchange() {
+  const card = document.getElementById("exchangeCard");
+  renderExchange();
+  document.getElementById("exInfo").onchange = e => { exData.info = e.target.value; save(); };
+  const addCourse = () => {
+    const inp = document.getElementById("exIdInput");
+    const id = inp.value.trim().toUpperCase();
+    if (!id) return;
+    if (exData.courses.some(c => c.id === id)) { alert("该课号已添加"); return; }
+    exData.courses.push({ id, st: "planned" });
+    save(); renderExchange();
+    inp.value = "";
+  };
+  document.getElementById("exAddBtn").onclick = addCourse;
+  document.getElementById("exIdInput").addEventListener("keydown", e => { if (e.key === "Enter") addCourse(); });
+  card.addEventListener("dragstart", e => {
+    const chipEl = e.target.closest("[data-ex]");
+    if (!chipEl) return;
+    exDrag = +chipEl.dataset.ex;
+    chipEl.classList.add("dragging");
+    e.dataTransfer.effectAllowed = "move";
+  });
+  card.addEventListener("dragend", () => {
+    document.querySelectorAll(".chip.dragging").forEach(c => c.classList.remove("dragging"));
+    exDrag = null;
+  });
+  ["exPlanZone", "exDoneZone"].forEach(zid => {
+    const z = document.getElementById(zid);
+    z.addEventListener("dragover", e => { e.preventDefault(); z.classList.add("drag-over"); });
+    z.addEventListener("dragleave", () => z.classList.remove("drag-over"));
+    z.addEventListener("drop", e => {
+      e.preventDefault();
+      z.classList.remove("drag-over");
+      if (exDrag == null) return;
+      exData.courses[exDrag].st = zid === "exDoneZone" ? "done" : "planned";
+      save(); renderExchange();
+    });
+  });
+  card.addEventListener("contextmenu", e => {
+    const chipEl = e.target.closest("[data-ex]");
+    if (!chipEl) return;
+    e.preventDefault();
+    exData.courses.splice(+chipEl.dataset.ex, 1);
+    save(); renderExchange();
+  });
+}
 </script>
 </body>
 </html>
