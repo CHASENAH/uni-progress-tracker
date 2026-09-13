@@ -168,6 +168,7 @@
         <option value="Minor">Minor</option>
       </select>
       <input id="extName" placeholder="项目名称，如 Computer Science" style="width:auto;flex:1">
+      <input id="extCredits" type="number" min="0" step="1" placeholder="所需学分" style="width:100px">
     </div>
     <div class="add-row">
       <textarea id="extPaste" rows="4" placeholder="每行一门课，例如：&#10;COMP 2012 Object-Oriented Programming and Data Structures 4&#10;MATH 2343 Discrete Structures 4&#10;COMP 3711 Design and Analysis of Algorithms"></textarea>
@@ -175,11 +176,11 @@
     </div>
     <div class="zone-grid" style="margin-top:12px">
       <div>
-        <div class="zone-title">必修 <span class="count" id="extReqCnt"></span></div>
+        <div class="zone-title" style="color:var(--accent)">必修 <span class="count" id="extReqCnt"></span></div>
         <div id="extReqZones"></div>
       </div>
       <div>
-        <div class="zone-title">选修 <span class="count" id="extEleCnt"></span></div>
+        <div class="zone-title" style="color:var(--accent)">选修 <span class="count" id="extEleCnt"></span></div>
         <div id="extEleZones"></div>
       </div>
     </div>
@@ -392,56 +393,50 @@ document.getElementById("startDate").onchange = e => { dates.start = e.target.va
 document.getElementById("endDate").onchange = e => { dates.end = e.target.value; save(); renderTime(); };
 
 /* ---------- 模块A：课程进度 ---------- */
-const subcatOpen = new Set(); // 各分组进度条默认折叠，点击标签行展开
-document.getElementById("subcats").addEventListener("click", e => {
-  const row = e.target.closest("[data-subcat]");
-  if (!row) return;
-  const key = row.dataset.subcat;
-  subcatOpen.has(key) ? subcatOpen.delete(key) : subcatOpen.add(key);
-  renderProgress();
-});
 function renderProgress() {
-  let got = 0, lite = 0, total = 0;
-  const need = DATA.total.need;
-  const doneCr = DATA.courses.filter(c => statuses[c.id] === "done").reduce((a, c) => a + c.credit, 0);
-  const progCr = DATA.courses.filter(c => statuses[c.id] === "progress").reduce((a, c) => a + c.credit, 0);
-  const counted = Math.min(need, doneCr);
-  const liteCr = Math.min(need - counted, progCr);
-  const pct = counted / need * 100, litePct = liteCr / need * 100;
+  /* Extend Major：所需学分计入总进度，下方分列 ISD / 延伸项目两个小进度条 */
+  const extOn = extData.type === "Extend Major" && extData.credits > 0;
+  const isdNeed = DATA.total.need;
+  const extNeed = extOn ? extData.credits : 0;
+  const need = isdNeed + extNeed;
+
+  const isdDone = DATA.courses.filter(c => statuses[c.id] === "done").reduce((a, c) => a + c.credit, 0);
+  const isdProg = DATA.courses.filter(c => statuses[c.id] === "progress").reduce((a, c) => a + c.credit, 0);
+  const extDone = extOn ? extData.courses.filter(c => c.st === "done").reduce((a, c) => a + c.credit, 0) : 0;
+  const extProg = extOn ? extData.courses.filter(c => c.st === "progress").reduce((a, c) => a + c.credit, 0) : 0;
+
+  const doneCr = Math.min(isdNeed, isdDone) + Math.min(extNeed, extDone);
+  const progCr = Math.min(isdNeed - Math.min(isdNeed, isdDone), isdProg) + Math.min(extNeed - Math.min(extNeed, extDone), extProg);
+  const counted = doneCr, liteCr = Math.min(need - doneCr, progCr);
+  const pct = need ? counted / need * 100 : 0;
+  const litePct = need ? Math.min(liteCr, need - counted) / need * 100 : 0;
   document.getElementById("coursePct").textContent = pct.toFixed(1) + "%" + (liteCr ? " (+" + liteCr + "学分进行中)" : "");
   document.getElementById("courseFill").style.width = pct + "%";
   const lf = document.getElementById("courseFillLite");
   lf.style.left = pct + "%"; lf.style.width = litePct + "%";
-  document.getElementById("courseNote").textContent = "深色 = 已完成，浅色 = 进行中（不计入完成进度）；超出 87 学分要求的部分不计入";
+  document.getElementById("courseNote").textContent = "深色 = 已完成，浅色 = 进行中（不计入完成进度）" +
+    (extOn ? `；含 ${extData.type}「${extData.name || "未命名"}」 ${extNeed} 学分` : "；超出 87 学分要求的部分不计入");
 
-  const colors = ["", "fill-1", "fill-2", "fill-3", "fill-4", "fill-5", "fill-6"];
-  document.getElementById("subcats").innerHTML = DATA.groups.map((gr, i) => {
-    // projE 拆高低两行
-    if (gr.g === "projE") return `
-      ${subBar("　├ 高阶课 (3000+)", 12, DATA.courses.filter(c => inGroup(c, "projE") && levelOf(c) >= 3000), "fill-5", "projE-hi")}
-      ${subBar("　└ 低阶课 (1000/2000级)", 9, DATA.courses.filter(c => inGroup(c, "projE") && levelOf(c) < 3000), "fill-6", "projE-lo")}`;
-    return subBar(gr.name, gr.need, DATA.courses.filter(c => inGroup(c, gr.g)), colors[i + 1], gr.g);
-  }).join("");
-
-  function subBar(label, needCr, list, color, key) {
-    const g = key.startsWith("projE") ? "projE" : key;
-    const done = list.filter(c => getStatus(ctxKey(c, g), c) === "done").reduce((a, c) => a + c.credit, 0);
-    const prog = list.filter(c => getStatus(ctxKey(c, g), c) === "progress").reduce((a, c) => a + c.credit, 0);
+  /* 仅 Extend Major 时显示两个小进度条 */
+  const subBar = (label, needCr, done, prog, color) => {
     const counted = Math.min(needCr, done);
-    const liteCr = Math.min(needCr - counted, prog);
-    const p = counted / needCr * 100, lp = liteCr / needCr * 100;
-    const open = subcatOpen.has(key);
+    const lite = Math.min(needCr - counted, prog);
+    const p = needCr ? counted / needCr * 100 : 0;
+    const lp = needCr ? lite / needCr * 100 : 0;
     return `<div class="subcat">
-      <div class="bar-row" style="cursor:pointer" data-subcat="${key}">
-        <span class="bar-label">${open ? "▾" : "▸"} ${label}　已完成 ${done}（进行中 ${prog}）/ 要求 ${needCr} 学分</span>
+      <div class="bar-row">
+        <span class="bar-label">${label}　已完成 ${done}（进行中 ${prog}）/ 要求 ${needCr} 学分</span>
         <span class="bar-label">${p.toFixed(0)}%${lp ? " +" + lp.toFixed(0) + "%" : ""}</span>
       </div>
-      <div class="track" style="${open ? "" : "display:none"}">
+      <div class="track">
         <div class="fill ${color}" style="width:${p}%"></div>
         <div class="fill ${color} lite" style="left:${p}%;width:${lp}%"></div>
       </div>
     </div>`;
-  }
+  };
+  document.getElementById("subcats").innerHTML = !extOn ? "" :
+    subBar(`ISD 专业课`, isdNeed, isdDone, isdProg, "fill-1") +
+    subBar(`延伸项目 · ${extData.name || "Extend Major"}`, extNeed, extDone, extProg, "fill-5");
 }
 
 /* ---------- 模块B ---------- */
